@@ -1,0 +1,12 @@
+# NuGet
+packages/
+
+# Visual Studio
+*.sap
+*.suo
+*.user
+
+# C#
+Bin/
+PerfLogs/
+obj/
