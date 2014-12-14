@@ -1,10 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
-using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
 
 namespace RPGM.Notes.ViewModels
@@ -12,21 +11,19 @@ namespace RPGM.Notes.ViewModels
     public class NotesViewModel : ViewModel
     {
         private readonly ICommand add;
-        private readonly ObservableCollection<Note> notes;
+        private readonly ICommand rename;
 
         public NotesViewModel(INavigationService navigation)
             : base(navigation)
         {
-            MessengerInstance.Register<NoteMessage>(this, NoteMessage.TOKEN_SAVE, OnNoteMessage);
-
-            this.add = new RelayCommand(OnAdd);
-            this.notes = new ObservableCollection<Note>();
+            add = new RelayCommand(OnAdd);
+            rename = new RelayCommand<Guid>(OnRename);
 
             if (IsInDesignMode)
             {
-                notes.Add(new Note { DateCreated = DateTimeOffset.UtcNow.AddHours(-127), Title = "Plot ideas" });
-                notes.Add(new Note { DateCreated = DateTimeOffset.UtcNow.AddHours(-52), Title = "Cormac" });
-                notes.Add(new Note { DateCreated = DateTimeOffset.UtcNow.AddHours(-9), Title = "Imps" });
+                Notes.Add(new Note { Title = "Plot ideas" });
+                Notes.Add(new Note { Title = "Cormac" });
+                Notes.Add(new Note { Title = "Imps" });
             }
         }
 
@@ -37,7 +34,17 @@ namespace RPGM.Notes.ViewModels
 
         public ObservableCollection<Note> Notes
         {
-            get { return notes; }
+            get { return State.Notes; }
+        }
+
+        public ICommand RenameCommand
+        {
+            get { return rename; }
+        }
+
+        public override async Task Initialize(object parameter)
+        {
+            await State.Notes.LoadAsync();
         }
 
         private void OnAdd()
@@ -46,12 +53,9 @@ namespace RPGM.Notes.ViewModels
             Navigation.NavigateTo("Rename");
         }
 
-        private void OnNoteMessage(NoteMessage message)
+        private void OnRename(Guid id)
         {
-            if (!notes.Any(x => x.Id == message.Note.Id))
-            {
-                notes.Add(message.Note);
-            }
+            Navigation.NavigateTo("Rename", id);
         }
     }
 }

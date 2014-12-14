@@ -10,7 +10,16 @@ namespace RPGM.Notes.ViewModels
         public Locator()
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
-            SimpleIoc.Default.Register<INavigationService>(CreateNavigationService);
+
+            if (ViewModel.IsInDesignModeStatic)
+            {
+                SimpleIoc.Default.Register<INavigationService, NavigationService>();
+            }
+            else
+            {
+                SimpleIoc.Default.Register<INavigationService>(CreateNavigationService);
+            }
+
             SimpleIoc.Default.Register<NotesViewModel>();
             SimpleIoc.Default.Register<NoteViewModel>();
         }
@@ -27,6 +36,7 @@ namespace RPGM.Notes.ViewModels
         
         public void Dispose()
         {
+            SimpleIoc.Default.Reset();
         }
 
         private static NavigationService CreateNavigationService()

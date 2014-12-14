@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml.Controls;
+﻿using RPGM.Notes.ViewModels;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.Pages
@@ -9,6 +10,14 @@ namespace RPGM.Notes.Pages
         {
             this.InitializeComponent();
             this.NavigationCacheMode = NavigationCacheMode.Required;
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (DataContext is ViewModel)
+            {
+                ((ViewModel)DataContext).Initialize(e.Parameter);
+            }
         }
     }
 }

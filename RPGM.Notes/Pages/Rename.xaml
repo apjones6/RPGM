@@ -30,6 +30,14 @@
                 Text="rename"
                 />
         </StackPanel>
+        
+        <TextBox
+            x:Uid="TitleTextBox"
+            Grid.Row="1"
+            Header="Title"
+            Margin="19,9.5,19,0"
+            Text="{Binding Title, Mode=TwoWay}"
+            />
     </Grid>
 
     <Page.BottomAppBar>
@@ -40,6 +48,13 @@
                     Command="{Binding SaveCommand}"
                     Icon="Save"
                     Label="save"
+                    />
+                <AppBarButton
+                    x:Uid="DeleteButton"
+                    Command="{Binding DeleteCommand}"
+                    Icon="Delete"
+                    Label="delete"
+                    Visibility="{Binding IsEdit, Converter={StaticResource BooleanToVisibilityConverter}}"
                     />
             </CommandBar.PrimaryCommands>
         </CommandBar>

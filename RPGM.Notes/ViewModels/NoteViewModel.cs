@@ -1,23 +1,31 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
-using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
 
 namespace RPGM.Notes.ViewModels
 {
     public class NoteViewModel : ViewModel
     {
+        private readonly ICommand delete;
         private readonly ICommand save;
 
+        private bool isNew;
         private Note note;
-        private int i;
+        private string title;
 
         public NoteViewModel(INavigationService navigation)
             : base(navigation)
         {
-            this.save = new RelayCommand(OnSave);
+            delete = new RelayCommand(OnDelete, () => !isNew);
+            save = new RelayCommand(OnSave);
+        }
+
+        public ICommand DeleteCommand
+        {
+            get { return delete; }
         }
 
         public ICommand SaveCommand
@@ -25,35 +33,62 @@ namespace RPGM.Notes.ViewModels
             get { return save; }
         }
 
-        public override void Initialize(object parameter)
+        public bool IsEdit
+        {
+            get { return !isNew; }
+        }
+
+        public string Title
+        {
+            get { return title; }
+            set { Set<string>(ref title, value, "Title"); }
+        }
+
+        public override Task Initialize(object parameter)
         {
             if (parameter == null)
             {
-                note = null;
+                note = new Note();
+                isNew = true;
             }
             else if (parameter is Guid)
             {
-                // TODO: Load the appropriate note from persistence layer
-                note = null;
+                note = State.Notes[(Guid)parameter];
+                isNew = false;
             }
-            else
+
+            // NOTE: Perhaps be robust here and just default to new
+            if (note == null)
             {
-                throw new NotSupportedException();
+                throw new ArgumentException("No note could be found for provided parameter.", "parameter");
             }
+            
+            // Copy properties so we don't update on cancel
+            title = note.Title;
+
+            return Task.FromResult(0);
+        }
+
+        private void OnDelete()
+        {
+            // TODO: Delete the note (asynchronous?)
+            State.Notes.Remove(note);
+
+            // TODO: Navigate to notes list, and possibly clean back stack
+            Navigation.GoBack();
         }
 
         private void OnSave()
         {
-            if (note == null)
-            {
-                note = Note.New(string.Format("Note {0}", i++));
-            }
+            note.Title = title;
 
             // TODO: Save the note (asynchronous?)
+            if (isNew)
+            {
+                State.Notes.Add(note);
+            }
 
-            MessengerInstance.Send(new NoteMessage(note), NoteMessage.TOKEN_SAVE);
-            
-            // TODO: Navigate to note contents
+            // TODO: Navigate to note contents (sometimes?)
             Navigation.GoBack();
         }
     }

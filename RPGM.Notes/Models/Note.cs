@@ -1,18 +1,27 @@
 ﻿using System;
-using GalaSoft.MvvmLight;
+using System.Runtime.Serialization;
 
 namespace RPGM.Notes.Models
 {
-    public class Note : ObservableObject
+    [DataContract]
+    public class Note
     {
-        private DateTimeOffset dateCreated;
-        private Guid id;
+        [DataMember]
+        private readonly DateTimeOffset dateCreated;
+        [DataMember]
+        private readonly Guid id;
+        [DataMember]
         private string title;
+        
+        public Note()
+        {
+            dateCreated = DateTimeOffset.UtcNow;
+            id = Guid.NewGuid();
+        }
 
         public DateTimeOffset DateCreated
         {
             get { return dateCreated; }
-            set { dateCreated = value; } // TODO: Should be getter only
         }
 
         public Guid Id
@@ -23,20 +32,7 @@ namespace RPGM.Notes.Models
         public string Title
         {
             get { return title; }
-            set
-            {
-                Set<string>(ref title, value);
-            }
-        }
-
-        public static Note New(string title = null)
-        {
-            return new Note
-                {
-                    dateCreated = DateTimeOffset.UtcNow,
-                    id = Guid.NewGuid(),
-                    title = title
-                };
+            set { title = value; }
         }
     }
 }
