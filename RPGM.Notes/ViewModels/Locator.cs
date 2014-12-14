@@ -1,43 +1,42 @@
+using System;
 using GalaSoft.MvvmLight.Ioc;
+using GalaSoft.MvvmLight.Views;
 using Microsoft.Practices.ServiceLocation;
 
 namespace RPGM.Notes.ViewModels
 {
-    /// <summary>
-    /// This class contains static references to all the view models in the
-    /// application and provides an entry point for the bindings.
-    /// </summary>
-    public class Locator
+    public class Locator : IDisposable
     {
-        /// <summary>
-        /// Initializes a new instance of the Locator class.
-        /// </summary>
         public Locator()
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
-
-            ////if (ViewModelBase.IsInDesignModeStatic)
-            ////{
-            ////    // Create design time view services and models
-            ////    SimpleIoc.Default.Register<IDataService, DesignDataService>();
-            ////}
-            ////else
-            ////{
-            ////    // Create run time view services and models
-            ////    SimpleIoc.Default.Register<IDataService, DataService>();
-            ////}
-
-            SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<INavigationService>(CreateNavigationService);
+            SimpleIoc.Default.Register<NotesViewModel>();
+            SimpleIoc.Default.Register<NoteViewModel>();
         }
 
-        public MainViewModel Main
+        public NotesViewModel Notes
         {
-            get { return ServiceLocator.Current.GetInstance<MainViewModel>(); }
+            get { return ServiceLocator.Current.GetInstance<NotesViewModel>(); }
+        }
+
+        public NoteViewModel Note
+        {
+            get { return ServiceLocator.Current.GetInstance<NoteViewModel>(); }
         }
         
-        public static void Cleanup()
+        public void Dispose()
         {
-            // TODO Clear the ViewModels
+        }
+
+        private static NavigationService CreateNavigationService()
+        {
+            var navigation = new NavigationService();
+
+            navigation.Configure("Main", typeof(Pages.Main));
+            navigation.Configure("Rename", typeof(Pages.Rename));
+
+            return navigation;
         }
     }
 }

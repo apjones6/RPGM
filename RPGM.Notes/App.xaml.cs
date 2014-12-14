@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.Phone.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
@@ -91,14 +82,27 @@ namespace RPGM.Notes
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                if (!rootFrame.Navigate(typeof(MainPage), e.Arguments))
+                if (!rootFrame.Navigate(typeof(Pages.Main), e.Arguments))
                 {
                     throw new Exception("Failed to create initial page");
                 }
             }
 
+            // TODO: Investigate whether we need to detach and reattach this on lifecycle events
+            HardwareButtons.BackPressed += HardwareButtons_BackPressed;
+
             // Ensure the current window is active
             Window.Current.Activate();
+        }
+
+        private void HardwareButtons_BackPressed(object sender, BackPressedEventArgs e)
+        {
+            var frame = Window.Current.Content as Frame;
+            if (frame != null && frame.CanGoBack)
+            {
+                e.Handled = true;
+                frame.GoBack();
+            }
         }
 
         /// <summary>
