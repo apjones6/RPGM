@@ -21,6 +21,11 @@ namespace RPGM.Notes.ViewModels
         {
             delete = new RelayCommand(OnDelete, () => !isNew);
             save = new RelayCommand(OnSave);
+
+            if (IsInDesignMode)
+            {
+                title = "Plot ideas";
+            }
         }
 
         public ICommand DeleteCommand
