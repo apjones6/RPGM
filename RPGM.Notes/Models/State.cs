@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using SQLite.Net;
+using SQLite.Net.Platform.WinRT;
 
 namespace RPGM.Notes.Models
 {
@@ -25,8 +27,12 @@ namespace RPGM.Notes.Models
 
         public Task InitializeAsync()
         {
-            // NOTE: We only need to load what we definitely need here. Other components will cause
-            //       what they need to be loaded.
+            using (var database = new SQLiteConnection(new SQLitePlatformWinRT(), "notes.db"))
+            {
+                // TODO: Ensure indexes as application requires
+                database.CreateTable<Note>();
+            }
+
             return Task.FromResult(0);
         }
 

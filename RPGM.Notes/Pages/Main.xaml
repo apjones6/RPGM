@@ -55,6 +55,12 @@
                                     CommandParameter="{Binding Id}"
                                     Text="rename"
                                     />
+                                <MenuFlyoutItem
+                                    x:Uid="DeleteButton"
+                                    Command="{Binding Path=DataContext.DeleteCommand, ElementName=Page}"
+                                    CommandParameter="{Binding Id}"
+                                    Text="delete"
+                                    />
                             </MenuFlyout>
                         </FlyoutBase.AttachedFlyout>
                         
@@ -76,7 +82,7 @@
         <CommandBar>
             <CommandBar.PrimaryCommands>
                 <AppBarButton
-                    x:Uid="AddButton"
+                    x:Uid="AppBarAdd"
                     Command="{Binding AddCommand}"
                     Icon="Add"
                     Label="add"

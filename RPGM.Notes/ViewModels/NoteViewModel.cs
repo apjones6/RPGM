@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
@@ -53,12 +54,12 @@ namespace RPGM.Notes.ViewModels
         {
             if (parameter == null)
             {
-                note = new Note();
+                note = new Note { DateCreated = DateTimeOffset.UtcNow };
                 isNew = true;
             }
-            else if (parameter is Guid)
+            else
             {
-                note = State.Notes[(Guid)parameter];
+                note = State.Notes.FirstOrDefault(x => parameter.Equals(x.Id));
                 isNew = false;
             }
 
