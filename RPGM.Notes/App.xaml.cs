@@ -44,7 +44,7 @@ namespace RPGM.Notes
                         break;
 
                     case ApplicationExecutionState.NotRunning:
-                        await State.Current.LoadAsync();
+                        await State.Current.InitializeAsync();
                         break;
                 }
 
