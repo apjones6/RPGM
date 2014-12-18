@@ -36,6 +36,11 @@ namespace RPGM.Notes.Models
             return Task.FromResult(0);
         }
 
+        public Task LoadAsync()
+        {
+            return Task.FromResult(0);
+        }
+
         public async Task SaveAsync()
         {
             await notes.SaveAsync();

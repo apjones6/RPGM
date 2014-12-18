@@ -35,7 +35,7 @@ namespace RPGM.Notes.Models
 
             using (var database = new SQLiteConnection(new SQLitePlatformWinRT(), "notes.db"))
             {
-                foreach (var note in database.Table<Note>())
+                foreach (var note in database.Table<Note>().OrderByDescending(x => x.DateCreated))
                 {
                     Add(note);
                 }

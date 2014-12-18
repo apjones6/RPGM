@@ -23,9 +23,10 @@ namespace RPGM.Notes.ViewModels
 
             if (IsInDesignMode)
             {
-                Notes.Add(new Note { Title = "Plot ideas" });
-                Notes.Add(new Note { Title = "Cormac" });
-                Notes.Add(new Note { Title = "Imps" });
+                Notes.Add(new Note { Title = "Plot ideas", DateCreated = DateTimeOffset.UtcNow });
+                Notes.Add(new Note { Title = "May", DateCreated = DateTimeOffset.UtcNow.AddMinutes(-47) });
+                Notes.Add(new Note { Title = "Cormac", DateCreated = DateTimeOffset.UtcNow.Date.AddHours(-1) });
+                Notes.Add(new Note { Title = "Imps", DateCreated = DateTimeOffset.UtcNow.AddDays(-10) });
             }
         }
 
