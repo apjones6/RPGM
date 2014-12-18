@@ -34,9 +34,18 @@ namespace RPGM.Notes
                 // TODO: change this value to a cache size that is appropriate for your application
                 rootFrame.CacheSize = 1;
 
-                if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
+                // Initialize databases and similar resources if possible app first run, or
+                // load data if not resumed from memory
+                switch (e.PreviousExecutionState)
                 {
-                    await State.Current.InitializeAsync();
+                    case ApplicationExecutionState.ClosedByUser:
+                    case ApplicationExecutionState.Terminated:
+                        await State.Current.LoadAsync();
+                        break;
+
+                    case ApplicationExecutionState.NotRunning:
+                        await State.Current.InitializeAsync();
+                        break;
                 }
 
                 // Place the frame in the current Window

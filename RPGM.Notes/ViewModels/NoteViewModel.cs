@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
@@ -12,14 +13,13 @@ namespace RPGM.Notes.ViewModels
         private readonly ICommand delete;
         private readonly ICommand save;
 
-        private bool isNew;
         private Note note;
         private string title;
 
         public NoteViewModel(INavigationService navigation)
             : base(navigation)
         {
-            delete = new RelayCommand(OnDelete, () => !isNew);
+            delete = new RelayCommand(OnDelete, () => IsEdit);
             save = new RelayCommand(OnSave);
 
             if (IsInDesignMode)
@@ -40,7 +40,7 @@ namespace RPGM.Notes.ViewModels
 
         public bool IsEdit
         {
-            get { return !isNew; }
+            get { return note != null && note.Id != Guid.Empty; }
         }
 
         public string Title
@@ -53,13 +53,11 @@ namespace RPGM.Notes.ViewModels
         {
             if (parameter == null)
             {
-                note = new Note();
-                isNew = true;
+                note = new Note { DateCreated = DateTimeOffset.UtcNow };
             }
-            else if (parameter is Guid)
+            else
             {
-                note = State.Notes[(Guid)parameter];
-                isNew = false;
+                note = State.Notes.FirstOrDefault(x => parameter.Equals(x.Id));
             }
 
             // NOTE: Perhaps be robust here and just default to new
@@ -88,9 +86,9 @@ namespace RPGM.Notes.ViewModels
             note.Title = title;
 
             // TODO: Save the note (asynchronous?)
-            if (isNew)
+            if (note.Id == Guid.Empty)
             {
-                State.Notes.Add(note);
+                State.Notes.Insert(0, note);
             }
 
             // TODO: Navigate to note contents (sometimes?)

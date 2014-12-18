@@ -1,21 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Storage;
+using SQLite.Net;
+using SQLite.Net.Platform.WinRT;
 
 namespace RPGM.Notes.Models
 {
     public class NoteCollection : ObservableCollection<Note>
     {
+        private readonly ISet<Guid> delete;
         private readonly DataContractJsonSerializer serializer;
         private bool loaded;
 
         public NoteCollection()
         {
+            this.delete = new HashSet<Guid>();
             this.serializer = new DataContractJsonSerializer(typeof(Note[]));
         }
 
@@ -24,50 +26,69 @@ namespace RPGM.Notes.Models
             get { return loaded; }
         }
 
-        public Note this[Guid id]
-        {
-            get { return this.FirstOrDefault(x => x.Id == id); }
-        }
-
-        public async Task LoadAsync()
+        public Task LoadAsync()
         {
             if (loaded)
             {
-                return;
+                return Task.FromResult(0);
             }
 
-            StorageFile file;
-            try
+            using (var database = new SQLiteConnection(new SQLitePlatformWinRT(), "notes.db"))
             {
-                file = await ApplicationData.Current.RoamingFolder.GetFileAsync("notes.json");
-            }
-            catch (FileNotFoundException)
-            {
-                loaded = true;
-                return;
-            }
-
-            var text = await FileIO.ReadTextAsync(file);
-            var stream = new MemoryStream(UTF8Encoding.UTF8.GetBytes(text));
-            var notes = (Note[])serializer.ReadObject(stream);
-            
-            foreach (var note in notes)
-            {
-                Add(note);
+                foreach (var note in database.Table<Note>().OrderByDescending(x => x.DateCreated))
+                {
+                    Add(note);
+                }
             }
 
             loaded = true;
+            return Task.FromResult(0);
         }
 
-        public async Task SaveAsync()
+        public void Remove(Guid id)
         {
-            // TODO: Only save when dirty
-            var notes = this.ToArray();
-            var stream = new MemoryStream();
-            serializer.WriteObject(stream, notes);
+            var note = this.FirstOrDefault(x => x.Id == id);
+            if (note == null)
+            {
+                throw new ArgumentException("No item in collection with provided id.", "id");
+            }
 
-            var file = await ApplicationData.Current.RoamingFolder.CreateFileAsync("notes.json", CreationCollisionOption.ReplaceExisting);
-            await FileIO.WriteBytesAsync(file, stream.ToArray());
+            Remove(note);
+        }
+
+        public Task SaveAsync()
+        {
+            using (var database = new SQLiteConnection(new SQLitePlatformWinRT(), "notes.db"))
+            {
+                // TODO: Only save dirty notes
+                foreach (var note in this)
+                {
+                    database.InsertOrReplace(note, typeof(Note));
+                }
+
+                // Delete notes
+                foreach (var id in delete)
+                {
+                    database.Delete<Note>(id);
+                }
+
+                // No need to remember these IDs now
+                delete.Clear();
+            }
+
+            return Task.FromResult(0);
+        }
+
+        protected override void RemoveItem(int index)
+        {
+            // We'll need this to remove from database
+            var note = this[index];
+            if (note != null && note.Id != Guid.Empty)
+            {
+                delete.Add(note.Id);
+            }
+
+            base.RemoveItem(index);
         }
     }
 }

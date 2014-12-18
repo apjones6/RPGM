@@ -1,38 +1,33 @@
 ﻿using System;
-using System.Runtime.Serialization;
+using GalaSoft.MvvmLight;
+using SQLite.Net.Attributes;
 
 namespace RPGM.Notes.Models
 {
-    [DataContract]
-    public class Note
+    public class Note : ObservableObject
     {
-        [DataMember]
-        private readonly DateTimeOffset dateCreated;
-        [DataMember]
-        private readonly Guid id;
-        [DataMember]
+        private DateTimeOffset dateCreated;
+        private Guid id;
         private string title;
-        
-        public Note()
-        {
-            dateCreated = DateTimeOffset.UtcNow;
-            id = Guid.NewGuid();
-        }
 
         public DateTimeOffset DateCreated
         {
             get { return dateCreated; }
+            set { Set<DateTimeOffset>(ref dateCreated, value, "DateCreated"); }
         }
 
+        [AutoIncrement]
+        [PrimaryKey]
         public Guid Id
         {
             get { return id; }
+            set { Set<Guid>(ref id, value, "Id"); }
         }
 
         public string Title
         {
             get { return title; }
-            set { title = value; }
+            set { Set<string>(ref title, value, "Title"); }
         }
     }
 }

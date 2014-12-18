@@ -117,13 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddButton" xml:space="preserve">
+  <data name="AppBarAdd.Label" xml:space="preserve">
     <value>add</value>
+  </data>
+  <data name="AppBarDelete.Label" xml:space="preserve">
+    <value>delete</value>
+  </data>
+  <data name="AppBarSave.Label" xml:space="preserve">
+    <value>save</value>
   </data>
   <data name="ApplicationTitle.Text" xml:space="preserve">
     <value>ROLEPLAY GAME MANAGER</value>
   </data>
-  <data name="DeleteButton.Label" xml:space="preserve">
+  <data name="DeleteButton.Text" xml:space="preserve">
     <value>delete</value>
   </data>
   <data name="NotesTitle.Text" xml:space="preserve">
@@ -134,8 +140,5 @@
   </data>
   <data name="RenameTitle.Text" xml:space="preserve">
     <value>rename</value>
-  </data>
-  <data name="SaveButton.Label" xml:space="preserve">
-    <value>save</value>
   </data>
 </root>
