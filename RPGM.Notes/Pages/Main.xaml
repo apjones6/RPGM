@@ -37,10 +37,10 @@
         <ListView
             Grid.Row="1"
             ItemsSource="{Binding Notes}"
-            Margin="19,9.5,19,0">
+            Margin="19,0,0,0">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Margin="14.5,0,0,0">
+                    <StackPanel>
                         <i:Interaction.Behaviors>
                             <c:EventTriggerBehavior EventName="Holding">
                                 <a:OpenFlyoutAction />
