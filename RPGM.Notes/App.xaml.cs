@@ -1,6 +1,4 @@
 ﻿using System;
-using RPGM.Notes.Models;
-using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Phone.UI.Input;
 using Windows.UI.Xaml;
@@ -17,10 +15,9 @@ namespace RPGM.Notes
         public App()
         {
             this.InitializeComponent();
-            this.Suspending += this.OnSuspending;
         }
 
-        protected override async void OnLaunched(LaunchActivatedEventArgs e)
+        protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             var rootFrame = Window.Current.Content as Frame;
 
@@ -33,20 +30,6 @@ namespace RPGM.Notes
 
                 // TODO: change this value to a cache size that is appropriate for your application
                 rootFrame.CacheSize = 1;
-
-                // Initialize databases and similar resources if possible app first run, or
-                // load data if not resumed from memory
-                switch (e.PreviousExecutionState)
-                {
-                    case ApplicationExecutionState.ClosedByUser:
-                    case ApplicationExecutionState.Terminated:
-                        await State.Current.LoadAsync();
-                        break;
-
-                    case ApplicationExecutionState.NotRunning:
-                        await State.Current.InitializeAsync();
-                        break;
-                }
 
                 // Place the frame in the current Window
                 Window.Current.Content = rootFrame;
@@ -94,15 +77,6 @@ namespace RPGM.Notes
             var rootFrame = sender as Frame;
             rootFrame.ContentTransitions = this.transitions ?? new TransitionCollection() { new NavigationThemeTransition() };
             rootFrame.Navigated -= this.OnNavigated;
-        }
-
-        private async void OnSuspending(object sender, SuspendingEventArgs e)
-        {
-            var deferral = e.SuspendingOperation.GetDeferral();
-
-            await State.Current.SaveAsync();
-
-            deferral.Complete();
         }
     }
 }

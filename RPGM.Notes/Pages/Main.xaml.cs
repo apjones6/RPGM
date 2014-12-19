@@ -12,11 +12,11 @@ namespace RPGM.Notes.Pages
             this.NavigationCacheMode = NavigationCacheMode.Required;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (DataContext is ViewModel)
             {
-                ((ViewModel)DataContext).Initialize(e.Parameter);
+                await ((ViewModel)DataContext).Initialize(e.Parameter);
             }
         }
     }

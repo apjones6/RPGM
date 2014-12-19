@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
@@ -12,6 +13,7 @@ namespace RPGM.Notes.ViewModels
     {
         private readonly ICommand add;
         private readonly ICommand delete;
+        private readonly ObservableCollection<Note> notes = new ObservableCollection<Note>();
         private readonly ICommand rename;
 
         public NotesViewModel(INavigationService navigation)
@@ -23,10 +25,10 @@ namespace RPGM.Notes.ViewModels
 
             if (IsInDesignMode)
             {
-                Notes.Add(new Note { Title = "Plot ideas", DateCreated = DateTimeOffset.UtcNow });
-                Notes.Add(new Note { Title = "May", DateCreated = DateTimeOffset.UtcNow.AddMinutes(-47) });
-                Notes.Add(new Note { Title = "Cormac", DateCreated = DateTimeOffset.UtcNow.Date.AddHours(-1) });
-                Notes.Add(new Note { Title = "Imps", DateCreated = DateTimeOffset.UtcNow.AddDays(-10) });
+                notes.Add(new Note { Title = "Plot ideas", DateCreated = DateTimeOffset.UtcNow });
+                notes.Add(new Note { Title = "May", DateCreated = DateTimeOffset.UtcNow.AddMinutes(-47) });
+                notes.Add(new Note { Title = "Cormac", DateCreated = DateTimeOffset.UtcNow.Date.AddHours(-1) });
+                notes.Add(new Note { Title = "Imps", DateCreated = DateTimeOffset.UtcNow.AddDays(-10) });
             }
         }
 
@@ -42,7 +44,7 @@ namespace RPGM.Notes.ViewModels
 
         public ObservableCollection<Note> Notes
         {
-            get { return State.Notes; }
+            get { return notes; }
         }
 
         public ICommand RenameCommand
@@ -52,7 +54,11 @@ namespace RPGM.Notes.ViewModels
 
         public override async Task Initialize(object parameter)
         {
-            await State.Notes.LoadAsync();
+            notes.Clear();
+            foreach (var note in await Database.Current.Table<Note>().OrderByDescending(x => x.DateCreated).ToListAsync())
+            {
+                notes.Add(note);
+            }
         }
 
         private void OnAdd()
@@ -61,9 +67,10 @@ namespace RPGM.Notes.ViewModels
             Navigation.NavigateTo("Rename");
         }
 
-        private void OnDelete(Guid id)
+        private async void OnDelete(Guid id)
         {
-            State.Notes.Remove(id);
+            await Database.Current.DeleteAsync<Note>(id);
+            notes.Remove(notes.Single(x => x.Id == id));
         }
 
         private void OnRename(Guid id)

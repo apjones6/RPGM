@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Views;
-using RPGM.Notes.Models;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -19,11 +18,6 @@ namespace RPGM.Notes.ViewModels
         protected INavigationService Navigation
         {
             get { return navigation; }
-        }
-
-        protected State State
-        {
-            get { return State.Current; }
         }
 
         public virtual Task Initialize(object parameter)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
@@ -14,7 +13,6 @@ namespace RPGM.Notes.ViewModels
         private readonly ICommand save;
 
         private Note note;
-        private string title;
 
         public NoteViewModel(INavigationService navigation)
             : base(navigation)
@@ -24,7 +22,7 @@ namespace RPGM.Notes.ViewModels
 
             if (IsInDesignMode)
             {
-                title = "Plot ideas";
+                note = new Note { Title = "Plot ideas" };
             }
         }
 
@@ -45,51 +43,42 @@ namespace RPGM.Notes.ViewModels
 
         public string Title
         {
-            get { return title; }
-            set { Set<string>(ref title, value, "Title"); }
+            get { return note != null ? note.Title : null; }
+            set
+            {
+                if (note != null)
+                {
+                    note.Title = value;
+                    RaisePropertyChanged("Title");
+                }
+            }
         }
 
-        public override Task Initialize(object parameter)
+        public override async Task Initialize(object parameter)
         {
-            if (parameter == null)
+            if (parameter != null)
             {
-                note = new Note { DateCreated = DateTimeOffset.UtcNow };
+                // TODO: Try/catch
+                note = await Database.Current.GetAsync<Note>(parameter);
+                RaisePropertyChanged("Title");
             }
             else
             {
-                note = State.Notes.FirstOrDefault(x => parameter.Equals(x.Id));
+                note = Note.New();
             }
-
-            // NOTE: Perhaps be robust here and just default to new
-            if (note == null)
-            {
-                throw new ArgumentException("No note could be found for provided parameter.", "parameter");
-            }
-            
-            // Copy properties so we don't update on cancel
-            title = note.Title;
-
-            return Task.FromResult(0);
         }
 
-        private void OnDelete()
+        private async void OnDelete()
         {
-            // TODO: Delete the note (asynchronous?)
-            State.Notes.Remove(note);
+            await Database.Current.DeleteAsync(note);
 
-            // TODO: Navigate to notes list, and possibly clean back stack
+            // TODO: Navigate forward to notes list, and possibly clean back stack
             Navigation.GoBack();
         }
 
-        private void OnSave()
+        private async void OnSave()
         {
-            note.Title = title;
-
-            // TODO: Save the note (asynchronous?)
-            if (note.Id == Guid.Empty)
-            {
-                State.Notes.Insert(0, note);
-            }
+            await Database.Current.InsertOrReplaceAsync(note);
 
             // TODO: Navigate to note contents (sometimes?)
             Navigation.GoBack();

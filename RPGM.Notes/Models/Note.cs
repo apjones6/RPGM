@@ -29,5 +29,10 @@ namespace RPGM.Notes.Models
             get { return title; }
             set { Set<string>(ref title, value, "Title"); }
         }
+
+        public static Note New()
+        {
+            return new Note { DateCreated = DateTimeOffset.UtcNow };
+        }
     }
 }
