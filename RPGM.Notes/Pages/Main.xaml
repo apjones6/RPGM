@@ -12,6 +12,48 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     DataContext="{Binding Notes, Source={StaticResource Locator}}">
     
+    <Page.Resources>
+        <DataTemplate x:Key="ItemTemplate">
+            <StackPanel>
+                <i:Interaction.Behaviors>
+                    <c:EventTriggerBehavior EventName="RightTapped">
+                        <a:OpenFlyoutAction />
+                    </c:EventTriggerBehavior>
+                </i:Interaction.Behaviors>
+
+                <FlyoutBase.AttachedFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            x:Uid="RenameButton"
+                            Command="{Binding Path=DataContext.RenameCommand, ElementName=Page}"
+                            CommandParameter="{Binding Id}"
+                            Text="rename"
+                            />
+                        <MenuFlyoutItem
+                            x:Uid="DeleteButton"
+                            Command="{Binding Path=DataContext.DeleteCommand, ElementName=Page}"
+                            CommandParameter="{Binding Id}"
+                            Text="delete"
+                            />
+                    </MenuFlyout>
+                </FlyoutBase.AttachedFlyout>
+
+                <TextBlock
+                    Style="{ThemeResource ListViewItemTextBlockStyle}"
+                    Text="{Binding Title}"
+                    />
+                <TextBlock
+                    Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}"
+                    Text="{Binding DateCreated, Converter={StaticResource TimeAgoConverter}}"
+                    />
+            </StackPanel>
+        </DataTemplate>
+
+        <Style x:Key="ItemContainerStyle" TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </Page.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -36,46 +78,11 @@
 
         <ListView
             Grid.Row="1"
+            ItemContainerStyle="{StaticResource ItemContainerStyle}"
             ItemsSource="{Binding Notes}"
-            Margin="19,0,0,0">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <i:Interaction.Behaviors>
-                            <c:EventTriggerBehavior EventName="Holding">
-                                <a:OpenFlyoutAction />
-                            </c:EventTriggerBehavior>
-                        </i:Interaction.Behaviors>
-                        
-                        <FlyoutBase.AttachedFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem
-                                    x:Uid="RenameButton"
-                                    Command="{Binding Path=DataContext.RenameCommand, ElementName=Page}"
-                                    CommandParameter="{Binding Id}"
-                                    Text="rename"
-                                    />
-                                <MenuFlyoutItem
-                                    x:Uid="DeleteButton"
-                                    Command="{Binding Path=DataContext.DeleteCommand, ElementName=Page}"
-                                    CommandParameter="{Binding Id}"
-                                    Text="delete"
-                                    />
-                            </MenuFlyout>
-                        </FlyoutBase.AttachedFlyout>
-                        
-                        <TextBlock
-                            Style="{ThemeResource ListViewItemTextBlockStyle}"
-                            Text="{Binding Title}"
-                            />
-                        <TextBlock
-                            Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}"
-                            Text="{Binding DateCreated, Converter={StaticResource TimeAgoConverter}}"
-                            />
-                    </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            ItemTemplate="{StaticResource ItemTemplate}"
+            Margin="19,0,0,0"
+            />
     </Grid>
     
     <Page.BottomAppBar>
