@@ -7,9 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    DataContext="{Binding Note, Source={StaticResource Injector}}">
+    DataContext="{Binding Note, Source={StaticResource Injector}}"
+    Transitions="{StaticResource ContinuumTransition}">
 
-    <Grid>
+    <Grid ChildrenTransitions="{StaticResource EntranceTransition}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

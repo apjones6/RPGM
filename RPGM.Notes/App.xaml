@@ -4,9 +4,23 @@
     xmlns:c="using:RPGM.Notes.Converters"
     xmlns:n="using:RPGM.Notes"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Application.Resources>
-    <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    <c:TimeAgoConverter x:Key="TimeAgoConverter" />
-    <n:Injector x:Key="Injector" />
-  </Application.Resources>
+
+    <Application.Resources>
+        <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <c:TimeAgoConverter x:Key="TimeAgoConverter" />
+        <n:Injector x:Key="Injector" />
+
+        <TransitionCollection x:Key="ContinuumTransition">
+            <NavigationThemeTransition>
+                <NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                    <ContinuumNavigationTransitionInfo />
+                </NavigationThemeTransition.DefaultNavigationTransitionInfo>
+            </NavigationThemeTransition>
+        </TransitionCollection>
+
+        <TransitionCollection x:Key="EntranceTransition">
+            <EntranceThemeTransition />
+        </TransitionCollection>
+    </Application.Resources>
+
 </Application>

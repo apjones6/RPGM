@@ -10,7 +10,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    DataContext="{Binding Notes, Source={StaticResource Injector}}">
+    DataContext="{Binding Notes, Source={StaticResource Injector}}"
+    Transitions="{StaticResource ContinuumTransition}">
     
     <Page.Resources>
         <DataTemplate x:Key="ItemTemplate">
@@ -53,8 +54,8 @@
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
     </Page.Resources>
-    
-    <Grid>
+
+    <Grid ChildrenTransitions="{StaticResource EntranceTransition}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
