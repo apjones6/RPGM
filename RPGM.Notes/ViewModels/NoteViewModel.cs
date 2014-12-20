@@ -10,7 +10,7 @@ namespace RPGM.Notes.ViewModels
     public class NoteViewModel : ViewModel
     {
         private readonly ICommand delete;
-        private readonly ICommand save;
+        private readonly RelayCommand save;
 
         private Note note;
 
@@ -18,7 +18,7 @@ namespace RPGM.Notes.ViewModels
             : base(navigation, database)
         {
             delete = new RelayCommand(OnDelete, () => IsEdit);
-            save = new RelayCommand(OnSave);
+            save = new RelayCommand(OnSave, CanSave);
 
             if (IsInDesignMode)
             {
@@ -50,8 +50,14 @@ namespace RPGM.Notes.ViewModels
                 {
                     note.Title = value;
                     RaisePropertyChanged("Title");
+                    save.RaiseCanExecuteChanged();
                 }
             }
+        }
+
+        public bool CanSave()
+        {
+            return note != null && !string.IsNullOrWhiteSpace(note.Title);
         }
 
         public override async Task Initialize(object parameter)

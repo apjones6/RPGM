@@ -37,7 +37,7 @@
             Grid.Row="1"
             Header="Title"
             Margin="19,9.5,19,0"
-            Text="{Binding Title, Mode=TwoWay}"
+            Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             />
     </Grid>
 
