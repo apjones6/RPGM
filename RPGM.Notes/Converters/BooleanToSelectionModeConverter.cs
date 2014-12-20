@@ -10,7 +10,7 @@ namespace RPGM.Notes.Converters
         {
             if (value is bool)
             {
-                return (bool)value ? ListViewSelectionMode.Multiple : ListViewSelectionMode.Single;
+                return (bool)value ? ListViewSelectionMode.Multiple : ListViewSelectionMode.None;
             }
 
             return value;

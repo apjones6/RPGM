@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
+using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
 
 namespace RPGM.Notes.ViewModels
@@ -14,7 +15,7 @@ namespace RPGM.Notes.ViewModels
     {
         private readonly ICommand add;
         private readonly ICommand delete;
-        private readonly ICommand deleteSelection;
+        private readonly RelayCommand deleteSelection;
         private readonly ObservableCollection<Note> notes = new ObservableCollection<Note>();
         private readonly ICommand rename;
         private readonly ISet<Guid> selectedIds = new HashSet<Guid>();
@@ -26,12 +27,14 @@ namespace RPGM.Notes.ViewModels
         public NotesViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
         {
+            Messenger.Register<BackMessage>(this, OnBackMessage);
+
             add = new RelayCommand(OnAdd);
             delete = new RelayCommand<Guid>(OnDelete);
-            deleteSelection = new RelayCommand(OnDeleteSelection);
+            deleteSelection = new RelayCommand(OnDeleteSelection, () => selectedIds.Count > 0);
             rename = new RelayCommand<Guid>(OnRename);
             selectionChanged = new RelayCommand<IList<object>>(OnSelectionChanged);
-            select = new RelayCommand(() => IsSelectable = true);
+            select = new RelayCommand(OnSelect);
 
             if (IsInDesignMode)
             {
@@ -105,6 +108,15 @@ namespace RPGM.Notes.ViewModels
             Navigation.NavigateTo("Rename");
         }
 
+        private void OnBackMessage(BackMessage message)
+        {
+            if (IsSelectable)
+            {
+                message.Handled = true;
+                IsSelectable = false;
+            }
+        }
+
         private async void OnDelete(Guid id)
         {
             notes.Remove(notes.Single(x => x.Id == id));
@@ -139,7 +151,14 @@ namespace RPGM.Notes.ViewModels
             }
 
             // Deselect all items cancels multiple selection mode
+            deleteSelection.RaiseCanExecuteChanged();
             IsSelectable = selectedIds.Any();
+        }
+
+        private void OnSelect()
+        {
+            deleteSelection.RaiseCanExecuteChanged();
+            IsSelectable = true;
         }
     }
 }

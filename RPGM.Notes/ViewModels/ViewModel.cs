@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Messaging;
 using GalaSoft.MvvmLight.Views;
 using RPGM.Notes.Models;
 
@@ -23,6 +24,11 @@ namespace RPGM.Notes.ViewModels
         protected IDatabase Database
         {
             get { return database; }
+        }
+
+        protected IMessenger Messenger
+        {
+            get { return MessengerInstance; }
         }
 
         protected INavigationService Navigation

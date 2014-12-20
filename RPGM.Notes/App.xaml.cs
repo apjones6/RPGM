@@ -1,4 +1,6 @@
 ﻿using System;
+using GalaSoft.MvvmLight.Messaging;
+using RPGM.Notes.Messages;
 using Windows.ApplicationModel.Activation;
 using Windows.Phone.UI.Input;
 using Windows.UI.Xaml;
@@ -64,6 +66,16 @@ namespace RPGM.Notes
 
         private void OnBackPressed(object sender, BackPressedEventArgs e)
         {
+            // Allow view models to handle, such as cancel multiple selection mode
+            var message = new BackMessage();
+            Messenger.Default.Send<BackMessage>(message);
+            if (message.Handled)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // Allow frame to handle
             var frame = Window.Current.Content as Frame;
             if (frame != null && frame.CanGoBack)
             {
