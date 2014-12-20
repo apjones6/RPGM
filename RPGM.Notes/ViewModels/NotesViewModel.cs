@@ -16,8 +16,8 @@ namespace RPGM.Notes.ViewModels
         private readonly ObservableCollection<Note> notes = new ObservableCollection<Note>();
         private readonly ICommand rename;
 
-        public NotesViewModel(INavigationService navigation)
-            : base(navigation)
+        public NotesViewModel(INavigationService navigation, IDatabase database)
+            : base(navigation, database)
         {
             add = new RelayCommand(OnAdd);
             delete = new RelayCommand<Guid>(OnDelete);
@@ -25,10 +25,10 @@ namespace RPGM.Notes.ViewModels
 
             if (IsInDesignMode)
             {
-                notes.Add(new Note { Title = "Plot ideas", DateCreated = DateTimeOffset.UtcNow });
-                notes.Add(new Note { Title = "May", DateCreated = DateTimeOffset.UtcNow.AddMinutes(-47) });
-                notes.Add(new Note { Title = "Cormac", DateCreated = DateTimeOffset.UtcNow.Date.AddHours(-1) });
-                notes.Add(new Note { Title = "Imps", DateCreated = DateTimeOffset.UtcNow.AddDays(-10) });
+                notes.Add(new Note { Title = "Plot ideas", DateModified = DateTimeOffset.UtcNow });
+                notes.Add(new Note { Title = "May", DateModified = DateTimeOffset.UtcNow.AddMinutes(-47) });
+                notes.Add(new Note { Title = "Cormac", DateModified = DateTimeOffset.UtcNow.Date.AddHours(-1) });
+                notes.Add(new Note { Title = "Imps", DateModified = DateTimeOffset.UtcNow.AddDays(-10) });
             }
         }
 
@@ -55,7 +55,7 @@ namespace RPGM.Notes.ViewModels
         public override async Task Initialize(object parameter)
         {
             notes.Clear();
-            foreach (var note in await Database.Current.Table<Note>().OrderByDescending(x => x.DateCreated).ToListAsync())
+            foreach (var note in await Database.ListAsync())
             {
                 notes.Add(note);
             }
@@ -69,8 +69,8 @@ namespace RPGM.Notes.ViewModels
 
         private async void OnDelete(Guid id)
         {
-            await Database.Current.DeleteAsync<Note>(id);
             notes.Remove(notes.Single(x => x.Id == id));
+            await Database.DeleteAsync(id);
         }
 
         private void OnRename(Guid id)

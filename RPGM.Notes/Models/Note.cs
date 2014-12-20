@@ -7,6 +7,7 @@ namespace RPGM.Notes.Models
     public class Note : ObservableObject
     {
         private DateTimeOffset dateCreated;
+        private DateTimeOffset dateModified;
         private Guid id;
         private string title;
 
@@ -14,6 +15,12 @@ namespace RPGM.Notes.Models
         {
             get { return dateCreated; }
             set { Set<DateTimeOffset>(ref dateCreated, value, "DateCreated"); }
+        }
+
+        public DateTimeOffset DateModified
+        {
+            get { return dateModified; }
+            set { Set<DateTimeOffset>(ref dateModified, value, "DateModified"); }
         }
 
         [AutoIncrement]
@@ -28,11 +35,6 @@ namespace RPGM.Notes.Models
         {
             get { return title; }
             set { Set<string>(ref title, value, "Title"); }
-        }
-
-        public static Note New()
-        {
-            return new Note { DateCreated = DateTimeOffset.UtcNow };
         }
     }
 }

@@ -14,8 +14,8 @@ namespace RPGM.Notes.ViewModels
 
         private Note note;
 
-        public NoteViewModel(INavigationService navigation)
-            : base(navigation)
+        public NoteViewModel(INavigationService navigation, IDatabase database)
+            : base(navigation, database)
         {
             delete = new RelayCommand(OnDelete, () => IsEdit);
             save = new RelayCommand(OnSave);
@@ -56,21 +56,21 @@ namespace RPGM.Notes.ViewModels
 
         public override async Task Initialize(object parameter)
         {
-            if (parameter != null)
+            if (parameter is Guid)
             {
                 // TODO: Try/catch
-                note = await Database.Current.GetAsync<Note>(parameter);
+                note = await Database.GetAsync((Guid)parameter);
                 RaisePropertyChanged("Title");
             }
             else
             {
-                note = Note.New();
+                note = new Note();
             }
         }
 
         private async void OnDelete()
         {
-            await Database.Current.DeleteAsync(note);
+            await Database.DeleteAsync(note.Id);
 
             // TODO: Navigate forward to notes list, and possibly clean back stack
             Navigation.GoBack();
@@ -78,7 +78,7 @@ namespace RPGM.Notes.ViewModels
 
         private async void OnSave()
         {
-            await Database.Current.InsertOrReplaceAsync(note);
+            await Database.SaveAsync(note);
 
             // TODO: Navigate to note contents (sometimes?)
             Navigation.GoBack();

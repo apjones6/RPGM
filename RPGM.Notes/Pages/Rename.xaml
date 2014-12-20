@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    DataContext="{Binding Note, Source={StaticResource Locator}}">
+    DataContext="{Binding Note, Source={StaticResource Injector}}">
 
     <Grid>
         <Grid.RowDefinitions>

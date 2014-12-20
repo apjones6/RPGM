@@ -2,11 +2,11 @@
     x:Class="RPGM.Notes.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:c="using:RPGM.Notes.Converters"
-    xmlns:vm="using:RPGM.Notes.ViewModels"
+    xmlns:n="using:RPGM.Notes"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Application.Resources>
     <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <c:TimeAgoConverter x:Key="TimeAgoConverter" />
-    <vm:Locator x:Key="Locator" />
+    <n:Injector x:Key="Injector" />
   </Application.Resources>
 </Application>

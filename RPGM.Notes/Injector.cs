@@ -2,24 +2,19 @@ using System;
 using GalaSoft.MvvmLight.Ioc;
 using GalaSoft.MvvmLight.Views;
 using Microsoft.Practices.ServiceLocation;
+using RPGM.Notes.Models;
+using RPGM.Notes.ViewModels;
 
-namespace RPGM.Notes.ViewModels
+namespace RPGM.Notes
 {
-    public class Locator : IDisposable
+    public class Injector : IDisposable
     {
-        public Locator()
+        public Injector()
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
-            if (ViewModel.IsInDesignModeStatic)
-            {
-                SimpleIoc.Default.Register<INavigationService, NavigationService>();
-            }
-            else
-            {
-                SimpleIoc.Default.Register<INavigationService>(CreateNavigationService);
-            }
-
+            SimpleIoc.Default.Register<INavigationService, RPGMNavigationService>();
+            SimpleIoc.Default.Register<IDatabase, Database>();
             SimpleIoc.Default.Register<NotesViewModel>();
             SimpleIoc.Default.Register<NoteViewModel>();
         }
@@ -39,14 +34,13 @@ namespace RPGM.Notes.ViewModels
             SimpleIoc.Default.Reset();
         }
 
-        private static NavigationService CreateNavigationService()
+        public class RPGMNavigationService : NavigationService
         {
-            var navigation = new NavigationService();
-
-            navigation.Configure("Main", typeof(Pages.Main));
-            navigation.Configure("Rename", typeof(Pages.Rename));
-
-            return navigation;
+            public RPGMNavigationService()
+            {
+                Configure("Main", typeof(Pages.Main));
+                Configure("Rename", typeof(Pages.Rename));
+            }
         }
     }
 }
