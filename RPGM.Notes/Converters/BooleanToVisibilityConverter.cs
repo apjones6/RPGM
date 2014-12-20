@@ -10,7 +10,7 @@ namespace RPGM.Notes.Converters
         {
             if (value is bool)
             {
-                return (bool)value ? Visibility.Visible : Visibility.Collapsed;
+                return (IsInverted(parameter) ? !(bool)value : (bool)value) ? Visibility.Visible : Visibility.Collapsed;
             }
 
             return value;
@@ -20,10 +20,15 @@ namespace RPGM.Notes.Converters
         {
             if (value is Visibility)
             {
-                return (Visibility)value == Visibility.Visible;
+                return IsInverted(parameter) ? (Visibility)value != Visibility.Visible : (Visibility)value == Visibility.Visible;
             }
 
             return value;
+        }
+
+        private static bool IsInverted(object parameter)
+        {
+            return parameter is string && "invert".Equals((string)parameter, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

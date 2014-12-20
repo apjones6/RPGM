@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,15 +14,24 @@ namespace RPGM.Notes.ViewModels
     {
         private readonly ICommand add;
         private readonly ICommand delete;
+        private readonly ICommand deleteSelection;
         private readonly ObservableCollection<Note> notes = new ObservableCollection<Note>();
         private readonly ICommand rename;
+        private readonly ISet<Guid> selectedIds = new HashSet<Guid>();
+        private readonly ICommand selectionChanged;
+        private readonly ICommand select;
+
+        private bool selectable;
 
         public NotesViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
         {
             add = new RelayCommand(OnAdd);
             delete = new RelayCommand<Guid>(OnDelete);
+            deleteSelection = new RelayCommand(OnDeleteSelection);
             rename = new RelayCommand<Guid>(OnRename);
+            selectionChanged = new RelayCommand<IList<object>>(OnSelectionChanged);
+            select = new RelayCommand(() => IsSelectable = true);
 
             if (IsInDesignMode)
             {
@@ -42,6 +52,24 @@ namespace RPGM.Notes.ViewModels
             get { return delete; }
         }
 
+        public ICommand DeleteSelectionCommand
+        {
+            get { return deleteSelection; }
+        }
+
+        public bool IsSelectable
+        {
+            get { return selectable; }
+            set
+            {
+                if (selectable != value)
+                {
+                    selectable = value;
+                    RaisePropertyChanged("IsSelectable");
+                }
+            }
+        }
+
         public ObservableCollection<Note> Notes
         {
             get { return notes; }
@@ -50,6 +78,16 @@ namespace RPGM.Notes.ViewModels
         public ICommand RenameCommand
         {
             get { return rename; }
+        }
+
+        public ICommand SelectionChangedCommand
+        {
+            get { return selectionChanged; }
+        }
+
+        public ICommand SelectCommand
+        {
+            get { return select; }
         }
 
         public override async Task Initialize(object parameter)
@@ -73,9 +111,35 @@ namespace RPGM.Notes.ViewModels
             await Database.DeleteAsync(id);
         }
 
+        private async void OnDeleteSelection()
+        {
+            var ids = selectedIds.ToArray();
+            foreach (var id in ids)
+            {
+                notes.Remove(notes.Single(x => x.Id == id));
+            }
+
+            IsSelectable = false;
+            selectedIds.Clear();
+
+            await Database.DeleteAsync(ids);
+        }
+
         private void OnRename(Guid id)
         {
             Navigation.NavigateTo("Rename", id);
+        }
+
+        private void OnSelectionChanged(IList<object> items)
+        {
+            selectedIds.Clear();
+            foreach (Note note in items)
+            {
+                selectedIds.Add(note.Id);
+            }
+
+            // Deselect all items cancels multiple selection mode
+            IsSelectable = selectedIds.Any();
         }
     }
 }

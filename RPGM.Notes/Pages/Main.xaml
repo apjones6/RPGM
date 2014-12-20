@@ -52,6 +52,13 @@
 
         <Style x:Key="ItemContainerStyle" TargetType="ListViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Transitions">
+                <Setter.Value>
+                    <TransitionCollection>
+                        <EntranceThemeTransition IsStaggeringEnabled="True" />
+                    </TransitionCollection>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Page.Resources>
 
@@ -78,12 +85,23 @@
         </StackPanel>
 
         <ListView
+            x:Name="NotesListView"
             Grid.Row="1"
             ItemContainerStyle="{StaticResource ItemContainerStyle}"
             ItemsSource="{Binding Notes}"
             ItemTemplate="{StaticResource ItemTemplate}"
             Margin="19,0,0,0"
-            />
+            SelectionMode="{Binding IsSelectable, Converter={StaticResource BooleanToSelectionModeConverter}}">
+            <i:Interaction.Behaviors>
+                <c:EventTriggerBehavior EventName="SelectionChanged">
+                    <c:InvokeCommandAction
+                        Command="{Binding SelectionChangedCommand}"
+                        InputConverter="{StaticResource SelectionChangedConverter}"
+                        InputConverterParameter="{Binding ElementName=NotesListView}"
+                        />
+                </c:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </ListView>
     </Grid>
     
     <Page.BottomAppBar>
@@ -94,6 +112,24 @@
                     Command="{Binding AddCommand}"
                     Icon="Add"
                     Label="add"
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
+                    />
+                <AppBarButton
+                    x:Uid="AppBarSelect"
+                    Command="{Binding SelectCommand}"
+                    Label="select"
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                    <AppBarButton.Icon>
+                        <!-- Same glyph as for Icon="Bullets", but that doesn't work in WP8.1 at present -->
+                        <FontIcon FontFamily="Segoe UI Symbol" Glyph="&#xE133;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton
+                    x:Uid="AppBarDelete"
+                    Command="{Binding DeleteSelectionCommand}"
+                    Icon="Delete"
+                    Label="delete"
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToVisibilityConverter}}"
                     />
             </CommandBar.PrimaryCommands>
         </CommandBar>

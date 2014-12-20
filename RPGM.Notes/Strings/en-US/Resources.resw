@@ -126,6 +126,9 @@
   <data name="AppBarSave.Label" xml:space="preserve">
     <value>save</value>
   </data>
+  <data name="AppBarSelect.Label" xml:space="preserve">
+    <value>select</value>
+  </data>
   <data name="ApplicationTitle.Text" xml:space="preserve">
     <value>ROLEPLAY GAME MANAGER</value>
   </data>

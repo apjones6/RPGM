@@ -6,7 +6,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Application.Resources>
+        <c:BooleanToSelectionModeConverter x:Key="BooleanToSelectionModeConverter" />
         <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <c:SelectionChangedConverter x:Key="SelectionChangedConverter" />
         <c:TimeAgoConverter x:Key="TimeAgoConverter" />
         <n:Injector x:Key="Injector" />
 

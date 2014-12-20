@@ -10,6 +10,7 @@ namespace RPGM.Notes.Models
     public interface IDatabase
     {
         Task DeleteAsync(Guid id);
+        Task DeleteAsync(IEnumerable<Guid> ids);
         Task<Note> GetAsync(Guid id);
         Task<IEnumerable<Note>> ListAsync();
         Task SaveAsync(Note note);
@@ -27,6 +28,14 @@ namespace RPGM.Notes.Models
         public Task DeleteAsync(Guid id)
         {
             return DeleteAsync<Note>(id);
+        }
+
+        public async Task DeleteAsync(IEnumerable<Guid> ids)
+        {
+            foreach (var id in ids)
+            {
+                await DeleteAsync<Note>(id);
+            }
         }
 
         public Task<Note> GetAsync(Guid id)
