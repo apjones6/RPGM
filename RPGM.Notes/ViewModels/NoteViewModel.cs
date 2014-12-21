@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
+using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
 
 namespace RPGM.Notes.ViewModels
@@ -10,19 +11,24 @@ namespace RPGM.Notes.ViewModels
     public class NoteViewModel : ViewModel
     {
         private readonly ICommand delete;
+        private readonly ICommand edit;
         private readonly RelayCommand save;
 
+        private bool editMode;
         private Note note;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
         {
-            delete = new RelayCommand(OnDelete, () => IsEdit);
+            Messenger.Register<BackMessage>(this, OnBackMessage);
+
+            delete = new RelayCommand(OnDelete, () => !IsNew);
+            edit = new RelayCommand(() => IsEditMode = true);
             save = new RelayCommand(OnSave, CanSave);
 
             if (IsInDesignMode)
             {
-                note = new Note { Title = "Plot ideas" };
+                note = new Note { RtfContent = @"{\rtf1\ansi This is RTF content...}", Title = "Plot ideas" };
             }
         }
 
@@ -31,14 +37,45 @@ namespace RPGM.Notes.ViewModels
             get { return delete; }
         }
 
+        public ICommand EditCommand
+        {
+            get { return edit; }
+        }
+
         public ICommand SaveCommand
         {
             get { return save; }
         }
 
-        public bool IsEdit
+        public bool IsEditMode
         {
-            get { return note != null && note.Id != Guid.Empty; }
+            get { return editMode; }
+            set
+            {
+                if (editMode != value)
+                {
+                    editMode = value;
+                    RaisePropertyChanged("IsEditMode");
+                }
+            }
+        }
+
+        public bool IsNew
+        {
+            get { return note != null && note.Id == Guid.Empty; }
+        }
+
+        public string RtfContent
+        {
+            get { return note != null ? note.RtfContent : null; }
+            set
+            {
+                if (note != null)
+                {
+                    note.RtfContent = value;
+                    RaisePropertyChanged("RtfContent");
+                }
+            }
         }
 
         public string Title
@@ -55,7 +92,7 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        public bool CanSave()
+        private bool CanSave()
         {
             return note != null && !string.IsNullOrWhiteSpace(note.Title);
         }
@@ -64,13 +101,24 @@ namespace RPGM.Notes.ViewModels
         {
             if (parameter is Guid)
             {
-                // TODO: Try/catch
                 note = await Database.GetAsync((Guid)parameter);
-                RaisePropertyChanged("Title");
             }
             else
             {
                 note = new Note();
+            }
+
+            save.RaiseCanExecuteChanged();
+            RaisePropertyChanged("RtfContent");
+            RaisePropertyChanged("Title");
+        }
+
+        private void OnBackMessage(BackMessage message)
+        {
+            if (IsEditMode)
+            {
+                message.Handled = true;
+                IsEditMode = false;
             }
         }
 
@@ -86,8 +134,13 @@ namespace RPGM.Notes.ViewModels
         {
             await Database.SaveAsync(note);
 
-            // TODO: Navigate to note contents (sometimes?)
-            Navigation.GoBack();
+            if (!IsEditMode)
+            {
+                // TODO: Navigate to note contents (sometimes?)
+                Navigation.GoBack();
+            }
+            
+            IsEditMode = false;
         }
     }
 }

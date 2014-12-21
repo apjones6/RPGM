@@ -123,6 +123,9 @@
   <data name="AppBarDelete.Label" xml:space="preserve">
     <value>delete</value>
   </data>
+  <data name="AppBarEdit.Label" xml:space="preserve">
+    <value>edit</value>
+  </data>
   <data name="AppBarSave.Label" xml:space="preserve">
     <value>save</value>
   </data>

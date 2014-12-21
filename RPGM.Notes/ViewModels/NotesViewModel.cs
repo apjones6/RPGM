@@ -21,6 +21,7 @@ namespace RPGM.Notes.ViewModels
         private readonly ISet<Guid> selectedIds = new HashSet<Guid>();
         private readonly ICommand selectionChanged;
         private readonly ICommand select;
+        private readonly ICommand tap;
 
         private bool selectable;
 
@@ -35,6 +36,7 @@ namespace RPGM.Notes.ViewModels
             rename = new RelayCommand<Guid>(OnRename);
             selectionChanged = new RelayCommand<IList<object>>(OnSelectionChanged);
             select = new RelayCommand(OnSelect);
+            tap = new RelayCommand<Guid>(OnTap);
 
             if (IsInDesignMode)
             {
@@ -91,6 +93,11 @@ namespace RPGM.Notes.ViewModels
         public ICommand SelectCommand
         {
             get { return select; }
+        }
+
+        public ICommand TapCommand
+        {
+            get { return tap; }
         }
 
         public override async Task Initialize(object parameter)
@@ -159,6 +166,11 @@ namespace RPGM.Notes.ViewModels
         {
             deleteSelection.RaiseCanExecuteChanged();
             IsSelectable = true;
+        }
+
+        private void OnTap(Guid id)
+        {
+            Navigation.NavigateTo("Note", id);
         }
     }
 }

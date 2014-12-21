@@ -39,6 +39,7 @@ namespace RPGM.Notes
             public RPGMNavigationService()
             {
                 Configure("Main", typeof(Pages.Main));
+                Configure("Note", typeof(Pages.Note));
                 Configure("Rename", typeof(Pages.Rename));
             }
         }

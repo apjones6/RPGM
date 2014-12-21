@@ -17,6 +17,12 @@
         <DataTemplate x:Key="ItemTemplate">
             <StackPanel>
                 <i:Interaction.Behaviors>
+                    <c:EventTriggerBehavior EventName="Tapped">
+                        <c:InvokeCommandAction
+                            Command="{Binding Path=DataContext.TapCommand, ElementName=Page}"
+                            CommandParameter="{Binding Id}"
+                            />
+                    </c:EventTriggerBehavior>
                     <!-- RightTapped is recommended, but it doesn't occur until user releases -->
                     <c:EventTriggerBehavior EventName="Holding">
                         <a:OpenFlyoutAction />
