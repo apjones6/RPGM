@@ -87,6 +87,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\RichEditBox.cs" />
     <Compile Include="Converters\BooleanToSelectionModeConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\SelectionChangedConverter.cs" />
@@ -96,6 +97,9 @@
     <Compile Include="Models\Note.cs" />
     <Compile Include="Pages\Main.xaml.cs">
       <DependentUpon>Main.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Note.xaml.cs">
+      <DependentUpon>Note.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\Rename.xaml.cs">
       <DependentUpon>Rename.xaml</DependentUpon>
@@ -127,6 +131,10 @@
     <Page Include="Pages\Main.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\Note.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\Rename.xaml">
       <SubType>Designer</SubType>

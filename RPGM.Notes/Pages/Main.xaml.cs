@@ -8,8 +8,8 @@ namespace RPGM.Notes.Pages
     {
         public Main()
         {
-            this.InitializeComponent();
             this.NavigationCacheMode = NavigationCacheMode.Required;
+            this.InitializeComponent();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

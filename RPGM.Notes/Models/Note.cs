@@ -9,6 +9,7 @@ namespace RPGM.Notes.Models
         private DateTimeOffset dateCreated;
         private DateTimeOffset dateModified;
         private Guid id;
+        private string rtfContent;
         private string title;
 
         public DateTimeOffset DateCreated
@@ -29,6 +30,12 @@ namespace RPGM.Notes.Models
         {
             get { return id; }
             set { Set<Guid>(ref id, value, "Id"); }
+        }
+
+        public string RtfContent
+        {
+            get { return rtfContent; }
+            set { Set<string>(ref rtfContent, value, "RtfContent"); }
         }
 
         public string Title
