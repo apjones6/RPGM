@@ -28,7 +28,7 @@ namespace RPGM.Notes.ViewModels
 
             if (IsInDesignMode)
             {
-                note = new Note { RtfContent = @"{\rtf1\ansi This is RTF content...}", Title = "Plot ideas" };
+                note = new Note { RtfContent = @"{\rtf1\ansi This is RTF content...}", Title = "Story ideas" };
             }
         }
 

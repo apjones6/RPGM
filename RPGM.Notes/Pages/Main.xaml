@@ -11,6 +11,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     DataContext="{Binding Notes, Source={StaticResource Injector}}"
+    RequestedTheme="Default"
     Transitions="{StaticResource ContinuumTransition}">
     
     <Page.Resources>

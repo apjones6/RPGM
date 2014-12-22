@@ -8,6 +8,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     DataContext="{Binding Note, Source={StaticResource Injector}}"
+    RequestedTheme="Default"
     Transitions="{StaticResource ContinuumTransition}">
 
     <Grid ChildrenTransitions="{StaticResource EntranceTransition}">
