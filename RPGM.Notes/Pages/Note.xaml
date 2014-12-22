@@ -118,40 +118,52 @@
 		</Style>
 	</Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid ChildrenTransitions="{StaticResource EntranceTransition}" Margin="19,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+    <Grid ChildrenTransitions="{StaticResource EntranceTransition}" Margin="19,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <Grid ChildrenTransitions="{StaticResource EntranceTransition}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
         
-            <StackPanel>
-                <TextBlock
-                    x:Uid="ApplicationTitle"
-                    FontFamily="{StaticResource PhoneFontFamilySemiBold}"
-                    Margin="0,12,0,0"
-                    Style="{StaticResource TitleTextBlockStyle}"
-                    Text="ROLEPLAY GAME MANAGER"
-                    />
-                <TextBlock
-                    Margin="0,-6.5,0,26.5"
-                    Style="{StaticResource HeaderTextBlockStyle}"
-                    Text="{Binding Title}"
-                    />
-            </StackPanel>
+                <StackPanel>
+                    <TextBlock
+                        x:Uid="ApplicationTitle"
+                        FontFamily="{StaticResource PhoneFontFamilySemiBold}"
+                        Margin="0,12,0,0"
+                        Style="{StaticResource TitleTextBlockStyle}"
+                        Text="ROLEPLAY GAME MANAGER"
+                        />
+                    <TextBlock
+                        Margin="0,-6.5,0,26.5"
+                        Style="{StaticResource HeaderTextBlockStyle}"
+                        Text="{Binding Title}"
+                        />
+                </StackPanel>
         
-            <c:RichEditBox
-                Grid.Row="1"
-                IsEnabled="{Binding IsEditMode}"
-                Margin="0,0,19,0"
-                RtfText="{Binding RtfContent, Mode=TwoWay}"
-                ScrollViewer.VerticalScrollMode="Disabled"
-                Style="{StaticResource RichEditBoxStyle}"
-                VerticalAlignment="Stretch"
-                />
-        </Grid>
-    </ScrollViewer>
-    
+                <c:RichEditBox
+                    Grid.Row="1"
+                    IsEnabled="{Binding IsEditMode}"
+                    Margin="0,0,19,0"
+                    RtfText="{Binding RtfContent, Mode=TwoWay}"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    Style="{StaticResource RichEditBoxStyle}"
+                    VerticalAlignment="Stretch"
+                    />
+            </Grid>
+        </ScrollViewer>
+
+        <Canvas
+            x:Name="KeyboardPlaceholder"
+            Grid.Row="1"
+            />
+    </Grid>
+
     <Page.BottomAppBar>
         <CommandBar>
             <CommandBar.PrimaryCommands>

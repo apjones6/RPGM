@@ -16,16 +16,26 @@ namespace RPGM.Notes.Pages
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             StatusBar.GetForCurrentView().ForegroundColor = null;
+            InputPane.GetForCurrentView().Showing -= OnOccludedRectUpdate;
+            InputPane.GetForCurrentView().Hiding -= OnOccludedRectUpdate;
             base.OnNavigatedFrom(e);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             StatusBar.GetForCurrentView().ForegroundColor = Color.FromArgb(0, 0, 0, 0);
+            InputPane.GetForCurrentView().Showing += OnOccludedRectUpdate;
+            InputPane.GetForCurrentView().Hiding += OnOccludedRectUpdate;
+
             if (DataContext is ViewModel)
             {
                 await ((ViewModel)DataContext).Initialize(e.Parameter);
             }
+        }
+
+        private void OnOccludedRectUpdate(InputPane sender, InputPaneVisibilityEventArgs args)
+        {
+            KeyboardPlaceholder.Height = sender.OccludedRect.Height;
         }
     }
 }
