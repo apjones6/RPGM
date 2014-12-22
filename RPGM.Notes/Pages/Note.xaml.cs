@@ -13,11 +13,6 @@ namespace RPGM.Notes.Pages
             this.InitializeComponent();
         }
 
-        private void OnOccludedRectUpdate(InputPane sender, InputPaneVisibilityEventArgs args)
-        {
-            KeyboardPlaceholder.Height = sender.OccludedRect.Height;
-        }
-
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
@@ -37,6 +32,11 @@ namespace RPGM.Notes.Pages
             {
                 await ((ViewModel)DataContext).Initialize(e.Parameter);
             }
+        }
+
+        private void OnOccludedRectUpdate(InputPane sender, InputPaneVisibilityEventArgs args)
+        {
+            KeyboardPlaceholder.Height = sender.OccludedRect.Height;
         }
     }
 }
