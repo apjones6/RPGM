@@ -88,7 +88,6 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\RichEditBox.cs" />
-    <Compile Include="Controls\StatusBarHelper.cs" />
     <Compile Include="Converters\BooleanToSelectionModeConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\SelectionChangedConverter.cs" />
