@@ -67,35 +67,34 @@
         </Style>
     </Page.Resources>
 
-    <Grid ChildrenTransitions="{StaticResource EntranceTransition}">
+    <Grid ChildrenTransitions="{StaticResource EntranceTransition}" Margin="19,0,0,0">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         
-        <StackPanel Grid.Row="0" Margin="19,0,0,0">
-            <TextBlock
-                x:Uid="ApplicationTitle"
-                FontFamily="{StaticResource PhoneFontFamilySemiBold}"
-                Margin="0,12,0,0"
-                Style="{StaticResource TitleTextBlockStyle}"
-                Text="ROLEPLAY GAME MANAGER"
-                />
-            <TextBlock
-                x:Uid="NotesTitle"
-                Margin="0,-6.5,0,26.5"
-                Style="{StaticResource HeaderTextBlockStyle}"
-                Text="notes"
-                />
-        </StackPanel>
-
+        <TextBlock
+            x:Uid="ApplicationTitle"
+            Grid.Row="0"
+            FontFamily="{StaticResource PhoneFontFamilySemiBold}"
+            Margin="0,12,0,0"
+            Style="{StaticResource TitleTextBlockStyle}"
+            Text="ROLEPLAY GAME MANAGER"
+            />
+        <TextBlock
+            x:Uid="NotesTitle"
+            Grid.Row="1"
+            Margin="0,-6.5,0,26.5"
+            Style="{StaticResource HeaderTextBlockStyle}"
+            Text="notes"
+            />
         <ListView
             x:Name="NotesListView"
-            Grid.Row="1"
+            Grid.Row="2"
             ItemContainerStyle="{StaticResource ItemContainerStyle}"
             ItemsSource="{Binding Notes}"
             ItemTemplate="{StaticResource ItemTemplate}"
-            Margin="19,0,0,0"
             SelectionMode="{Binding IsSelectable, Converter={StaticResource BooleanToSelectionModeConverter}}">
             <i:Interaction.Behaviors>
                 <c:EventTriggerBehavior EventName="SelectionChanged">

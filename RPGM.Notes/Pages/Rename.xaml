@@ -7,33 +7,33 @@
     RequestedTheme="Default"
     Transitions="{StaticResource ContinuumTransition}">
 
-    <Grid ChildrenTransitions="{StaticResource EntranceTransition}">
+    <Grid ChildrenTransitions="{StaticResource EntranceTransition}" Margin="19,0,0,0">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="19,0,0,0">
-            <TextBlock
-                x:Uid="ApplicationTitle"
-                FontFamily="{StaticResource PhoneFontFamilySemiBold}"
-                Margin="0,12,0,0"
-                Style="{StaticResource TitleTextBlockStyle}"
-                Text="ROLEPLAY GAME MANAGER"
-                />
-            <TextBlock
-                x:Uid="RenameTitle"
-                Margin="0,-6.5,0,26.5"
-                Style="{StaticResource HeaderTextBlockStyle}"
-                Text="rename"
-                />
-        </StackPanel>
-        
+        <TextBlock
+            x:Uid="ApplicationTitle"
+            Grid.Row="0"
+            FontFamily="{StaticResource PhoneFontFamilySemiBold}"
+            Margin="0,12,0,0"
+            Style="{StaticResource TitleTextBlockStyle}"
+            Text="ROLEPLAY GAME MANAGER"
+            />
+        <TextBlock
+            x:Uid="RenameTitle"
+            Grid.Row="1"
+            Margin="0,-6.5,0,26.5"
+            Style="{StaticResource HeaderTextBlockStyle}"
+            Text="rename"
+            />
         <TextBox
             x:Uid="TitleTextBox"
-            Grid.Row="1"
+            Grid.Row="2"
             Header="Title"
-            Margin="19,9.5,19,0"
+            Margin="0,9.5,19,0"
             Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             />
     </Grid>
