@@ -2,7 +2,7 @@
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 
-namespace RPGM.Notes.Views
+namespace RPGM.Notes.Controls
 {
     public class RichEditBox : Windows.UI.Xaml.Controls.RichEditBox
     {
