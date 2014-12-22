@@ -20,14 +20,15 @@ namespace RPGM.Notes.Pages
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            base.OnNavigatedFrom(e);
             StatusBar.GetForCurrentView().ForegroundColor = null;
             InputPane.GetForCurrentView().Showing -= OnOccludedRectUpdate;
             InputPane.GetForCurrentView().Hiding -= OnOccludedRectUpdate;
-            base.OnNavigatedFrom(e);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            base.OnNavigatedTo(e);
             StatusBar.GetForCurrentView().ForegroundColor = Color.FromArgb(0, 0, 0, 0);
             InputPane.GetForCurrentView().Showing += OnOccludedRectUpdate;
             InputPane.GetForCurrentView().Hiding += OnOccludedRectUpdate;

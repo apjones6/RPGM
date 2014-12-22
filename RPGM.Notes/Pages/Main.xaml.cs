@@ -14,6 +14,7 @@ namespace RPGM.Notes.Pages
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            base.OnNavigatedTo(e);
             if (DataContext is ViewModel)
             {
                 await ((ViewModel)DataContext).Initialize(e.Parameter);
