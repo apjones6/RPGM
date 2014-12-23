@@ -169,11 +169,7 @@
             </Grid>
         </ScrollViewer>
 
-        <!-- Placeholder's height is updated to match keyboard -->
-        <Canvas
-            x:Name="KeyboardPlaceholder"
-            Grid.Row="1"
-            />
+        <c:OcclusionPlaceholder Grid.Row="1" />
     </Grid>
 
     <Page.BottomAppBar>

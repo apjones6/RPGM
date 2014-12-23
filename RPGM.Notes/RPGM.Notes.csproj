@@ -89,6 +89,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\Flyout.cs" />
+    <Compile Include="Controls\OcclusionPlaceholder.cs" />
     <Compile Include="Controls\RichEditBox.cs" />
     <Compile Include="Converters\BooleanToSelectionModeConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />

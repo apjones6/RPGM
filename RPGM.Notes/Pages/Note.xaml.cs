@@ -32,26 +32,16 @@ namespace RPGM.Notes.Pages
         {
             base.OnNavigatedFrom(e);
             StatusBar.GetForCurrentView().ForegroundColor = null;
-            InputPane.GetForCurrentView().Showing -= OnOccludedRectUpdate;
-            InputPane.GetForCurrentView().Hiding -= OnOccludedRectUpdate;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
             StatusBar.GetForCurrentView().ForegroundColor = Color.FromArgb(0, 0, 0, 0);
-            InputPane.GetForCurrentView().Showing += OnOccludedRectUpdate;
-            InputPane.GetForCurrentView().Hiding += OnOccludedRectUpdate;
-
             if (DataContext is NoteViewModel)
             {
                 await ((NoteViewModel)DataContext).InitializeAsync(e.Parameter, RtfContentBox.Document);
             }
-        }
-
-        private void OnOccludedRectUpdate(InputPane sender, InputPaneVisibilityEventArgs args)
-        {
-            KeyboardPlaceholder.Height = sender.OccludedRect.Height;
         }
     }
 }
