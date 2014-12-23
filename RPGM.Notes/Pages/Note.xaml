@@ -177,7 +177,7 @@
     </Grid>
 
     <Page.BottomAppBar>
-        <CommandBar>
+        <CommandBar Visibility="{Binding Path=TextFormat.IsOpen, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
             <CommandBar.PrimaryCommands>
                 <AppBarButton
                     x:Uid="AppBarEdit"
@@ -205,12 +205,19 @@
                     </i:Interaction.Behaviors>
                     
                     <FlyoutBase.AttachedFlyout>
-                        <Flyout
-                            Closed="OnFlyoutClosed"
-                            Opened="OnFlyoutOpened"
-                            Placement="Full">
+                        <c:Flyout Closed="OnFlyoutClosed" Opened="OnFlyoutOpened" Placement="Full">
+                            <c:Flyout.ClosedActions>
+                                <i:ActionCollection>
+                                    <core:InvokeCommandAction Command="{Binding Path=TextFormat.ClosedCommand}" />
+                                </i:ActionCollection>
+                            </c:Flyout.ClosedActions>
+                            <c:Flyout.OpenedActions>
+                                <i:ActionCollection>
+                                    <core:InvokeCommandAction Command="{Binding Path=TextFormat.OpenedCommand}" />
+                                </i:ActionCollection>
+                            </c:Flyout.OpenedActions>
                             <v:TextFormat DataContext="{Binding TextFormat}" />
-                        </Flyout>
+                        </c:Flyout>
                     </FlyoutBase.AttachedFlyout>
                 </AppBarButton>
             </CommandBar.PrimaryCommands>

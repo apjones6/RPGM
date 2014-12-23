@@ -7,20 +7,42 @@ namespace RPGM.Notes.ViewModels
 {
     public class TextFormatViewModel : ViewModel
     {
+        private readonly ICommand closed;
         private readonly ITextDocument document;
+        private readonly ICommand opened;
         private readonly ICommand selectionChanged;
+
+        private bool open;
 
         public TextFormatViewModel(ITextDocument document)
         {
             if (document == null) throw new ArgumentNullException("document");
 
+            this.closed = new RelayCommand(() => IsOpen = false);
             this.document = document;
+            this.opened = new RelayCommand(() => IsOpen = true);
             this.selectionChanged = new RelayCommand(OnSelectionChanged);
+        }
+
+        public ICommand ClosedCommand
+        {
+            get { return closed; }
         }
 
         public ITextDocument Document
         {
             get { return document; }
+        }
+
+        public bool IsOpen
+        {
+            get { return open; }
+            set { Set<bool>(ref open, value, "IsOpen"); }
+        }
+
+        public ICommand OpenedCommand
+        {
+            get { return opened; }
         }
 
         public ICommand SelectionChangedCommand

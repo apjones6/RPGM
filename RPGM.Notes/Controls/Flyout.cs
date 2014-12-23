@@ -3,7 +3,6 @@ using Windows.UI.Xaml;
 
 namespace RPGM.Notes.Controls
 {
-    // NOTE: Unused as there are additional complications, such as separate visual trees for Top/Bottom bars
     public class Flyout : Windows.UI.Xaml.Controls.Flyout
     {
         public static readonly DependencyProperty ClosedActionsProperty = DependencyProperty.Register("ClosedActions", typeof(ActionCollection), typeof(Flyout), PropertyMetadata.Create((object)null));
@@ -29,17 +28,23 @@ namespace RPGM.Notes.Controls
 
         private void OnClosed(object sender, object e)
         {
-            foreach (var action in ClosedActions)
+            if (ClosedActions != null)
             {
-                ((IAction)action).Execute(sender, e);
+                foreach (IAction action in ClosedActions)
+                {
+                    action.Execute(sender, e);
+                }
             }
         }
 
         private void OnOpened(object sender, object e)
         {
-            foreach (var action in OpenedActions)
+            if (OpenedActions != null)
             {
-                ((IAction)action).Execute(sender, e);
+                foreach (IAction action in OpenedActions)
+                {
+                    action.Execute(sender, e);
+                }
             }
         }
     }
