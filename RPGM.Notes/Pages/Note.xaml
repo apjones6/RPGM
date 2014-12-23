@@ -205,7 +205,10 @@
                     </i:Interaction.Behaviors>
                     
                     <FlyoutBase.AttachedFlyout>
-                        <Flyout x:Name="FormatFlyout" Placement="Full">
+                        <Flyout
+                            Closed="OnFlyoutClosed"
+                            Opened="OnFlyoutOpened"
+                            Placement="Full">
                             <v:TextFormat DataContext="{Binding TextFormat}" />
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>

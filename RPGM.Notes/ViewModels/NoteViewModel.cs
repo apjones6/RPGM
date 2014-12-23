@@ -17,7 +17,7 @@ namespace RPGM.Notes.ViewModels
 
         private bool editMode;
         private Note note;
-        private TextFormatViewModel textFormatViewModel;
+        private TextFormatViewModel textFormat;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
@@ -82,7 +82,7 @@ namespace RPGM.Notes.ViewModels
 
         public object TextFormat
         {
-            get { return textFormatViewModel; }
+            get { return textFormat; }
         }
 
         public string Title
@@ -124,7 +124,7 @@ namespace RPGM.Notes.ViewModels
         {
             await InitializeAsync(parameter);
 
-            this.textFormatViewModel = new TextFormatViewModel(document);
+            this.textFormat = new TextFormatViewModel(document);
             RaisePropertyChanged("TextFormat");
         }
 

@@ -12,21 +12,20 @@ namespace RPGM.Notes.Pages
         public Note()
         {
             this.InitializeComponent();
-
-            // Ideally we use Behaviors for this, but they don't work for Flyouts
-            // Furthermore extending Flyout with special ActionCollections we next hit issue with the Top/Bottom bars running on separate visual trees
-            this.FormatFlyout.Closed += OnFlyoutClosed;
-            this.FormatFlyout.Opened += OnFlyoutOpened;
         }
 
         private void OnFlyoutClosed(object sender, object e)
         {
+            // Ideally we use Behaviors for this, but they don't work for Flyouts
+            // Furthermore extending Flyout with special ActionCollections we next hit issue with the Top/Bottom bars running on separate visual trees
             BottomAppBar.Visibility = Visibility.Visible;
             RtfContentBox.Focus(FocusState.Programmatic);
         }
 
         private void OnFlyoutOpened(object sender, object e)
         {
+            // Ideally we use Behaviors for this, but they don't work for Flyouts
+            // Furthermore extending Flyout with special ActionCollections we next hit issue with the Top/Bottom bars running on separate visual trees
             BottomAppBar.Visibility = Visibility.Collapsed;
             BottomAppBar.Focus(FocusState.Programmatic);
         }
