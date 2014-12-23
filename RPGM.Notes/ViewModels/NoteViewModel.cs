@@ -17,6 +17,7 @@ namespace RPGM.Notes.ViewModels
 
         private bool editMode;
         private Note note;
+        private Note original;
         private TextFormatViewModel textFormat;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
@@ -108,12 +109,15 @@ namespace RPGM.Notes.ViewModels
         {
             if (parameter is Guid)
             {
-                note = await Database.GetAsync((Guid)parameter);
+                original = await Database.GetAsync((Guid)parameter);
             }
             else
             {
-                note = new Note();
+                original = new Note();
             }
+
+            // Copy so we can revert changes without database hit
+            note = new Note(original);
 
             save.RaiseCanExecuteChanged();
             RaisePropertyChanged("RtfContent");
@@ -132,6 +136,11 @@ namespace RPGM.Notes.ViewModels
         {
             if (IsEditMode)
             {
+                // Restore note to original as it may have changes
+                // TODO: I really think we should save on back, and handle cancel/discard as the edge case
+                note = new Note(original);
+                RaisePropertyChanged("RtfContent");
+                RaisePropertyChanged("Title");
                 message.Handled = true;
                 IsEditMode = false;
             }
