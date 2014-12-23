@@ -114,8 +114,8 @@
     <Compile Include="ViewModels\NoteViewModel.cs" />
     <Compile Include="ViewModels\TextFormatViewModel.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />
-    <Compile Include="Views\TextFormat.xaml.cs">
-      <DependentUpon>TextFormat.xaml</DependentUpon>
+    <Compile Include="Views\TextFormatView.xaml.cs">
+      <DependentUpon>TextFormatView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -153,7 +153,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\TextFormat.xaml">
+    <Page Include="Views\TextFormatView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

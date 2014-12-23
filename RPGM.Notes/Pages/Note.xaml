@@ -197,7 +197,7 @@
                             <c:Flyout.OpenedActions>
                                 <core:InvokeCommandAction Command="{Binding Path=TextFormat.OpenedCommand}" />
                             </c:Flyout.OpenedActions>
-                            <v:TextFormat DataContext="{Binding TextFormat}" />
+                            <v:TextFormatView DataContext="{Binding TextFormat}" />
                         </c:Flyout>
                     </FlyoutBase.AttachedFlyout>
                 </AppBarButton>

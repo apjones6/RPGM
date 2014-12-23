@@ -2,9 +2,9 @@
 
 namespace RPGM.Notes.Views
 {
-    public sealed partial class TextFormat : UserControl
+    public sealed partial class TextFormatView : UserControl
     {
-        public TextFormat()
+        public TextFormatView()
         {
             this.InitializeComponent();
         }
