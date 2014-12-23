@@ -207,14 +207,10 @@
                     <FlyoutBase.AttachedFlyout>
                         <c:Flyout Closed="OnFlyoutClosed" Opened="OnFlyoutOpened" Placement="Full">
                             <c:Flyout.ClosedActions>
-                                <i:ActionCollection>
-                                    <core:InvokeCommandAction Command="{Binding Path=TextFormat.ClosedCommand}" />
-                                </i:ActionCollection>
+                                <core:InvokeCommandAction Command="{Binding Path=TextFormat.ClosedCommand}" />
                             </c:Flyout.ClosedActions>
                             <c:Flyout.OpenedActions>
-                                <i:ActionCollection>
-                                    <core:InvokeCommandAction Command="{Binding Path=TextFormat.OpenedCommand}" />
-                                </i:ActionCollection>
+                                <core:InvokeCommandAction Command="{Binding Path=TextFormat.OpenedCommand}" />
                             </c:Flyout.OpenedActions>
                             <v:TextFormat DataContext="{Binding TextFormat}" />
                         </c:Flyout>

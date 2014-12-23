@@ -5,11 +5,13 @@ namespace RPGM.Notes.Controls
 {
     public class Flyout : Windows.UI.Xaml.Controls.Flyout
     {
-        public static readonly DependencyProperty ClosedActionsProperty = DependencyProperty.Register("ClosedActions", typeof(ActionCollection), typeof(Flyout), PropertyMetadata.Create((object)null));
-        public static readonly DependencyProperty OpenedActionsProperty = DependencyProperty.Register("OpenedActions", typeof(ActionCollection), typeof(Flyout), PropertyMetadata.Create((object)null));
+        public static readonly DependencyProperty ClosedActionsProperty = DependencyProperty.Register("ClosedActions", typeof(ActionCollection), typeof(Flyout), new PropertyMetadata(null));
+        public static readonly DependencyProperty OpenedActionsProperty = DependencyProperty.Register("OpenedActions", typeof(ActionCollection), typeof(Flyout), new PropertyMetadata(null));
 
         public Flyout()
         {
+            SetValue(ClosedActionsProperty, new ActionCollection());
+            SetValue(OpenedActionsProperty, new ActionCollection());
             Closed += OnClosed;
             Opened += OnOpened;
         }
@@ -17,34 +19,26 @@ namespace RPGM.Notes.Controls
         public ActionCollection ClosedActions
         {
             get { return (ActionCollection)GetValue(ClosedActionsProperty); }
-            set { SetValue(ClosedActionsProperty, value); }
         }
 
         public ActionCollection OpenedActions
         {
             get { return (ActionCollection)GetValue(OpenedActionsProperty); }
-            set { SetValue(OpenedActionsProperty, value); }
         }
 
         private void OnClosed(object sender, object e)
         {
-            if (ClosedActions != null)
+            foreach (IAction action in ClosedActions)
             {
-                foreach (IAction action in ClosedActions)
-                {
-                    action.Execute(sender, e);
-                }
+                action.Execute(sender, e);
             }
         }
 
         private void OnOpened(object sender, object e)
         {
-            if (OpenedActions != null)
+            foreach (IAction action in OpenedActions)
             {
-                foreach (IAction action in OpenedActions)
-                {
-                    action.Execute(sender, e);
-                }
+                action.Execute(sender, e);
             }
         }
     }
