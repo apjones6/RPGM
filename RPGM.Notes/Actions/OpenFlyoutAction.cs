@@ -8,8 +8,14 @@ namespace RPGM.Notes.Actions
     {
         public object Execute(object sender, object parameter)
         {
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-            return null;
+            var flyoutOwner = sender as FrameworkElement;
+            if (flyoutOwner != null)
+            {
+                FlyoutBase.ShowAttachedFlyout(flyoutOwner);
+                return true;
+            }
+
+            return false;
         }
     }
 }

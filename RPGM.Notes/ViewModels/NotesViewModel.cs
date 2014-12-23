@@ -100,7 +100,7 @@ namespace RPGM.Notes.ViewModels
             get { return tap; }
         }
 
-        public override async Task Initialize(object parameter)
+        public override async Task InitializeAsync(object parameter)
         {
             notes.Clear();
             foreach (var note in await Database.ListAsync())

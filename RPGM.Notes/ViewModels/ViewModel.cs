@@ -12,6 +12,10 @@ namespace RPGM.Notes.ViewModels
         private readonly INavigationService navigation;
         private readonly IDatabase database;
 
+        protected ViewModel()
+        {
+        }
+
         protected ViewModel(INavigationService navigation, IDatabase database)
         {
             if (navigation == null) throw new ArgumentNullException("navigation");
@@ -36,7 +40,7 @@ namespace RPGM.Notes.ViewModels
             get { return navigation; }
         }
 
-        public virtual Task Initialize(object parameter)
+        public virtual Task InitializeAsync(object parameter)
         {
             return Task.FromResult(0);
         }

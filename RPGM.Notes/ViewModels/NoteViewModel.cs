@@ -5,6 +5,7 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
 using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
+using Windows.UI.Text;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -16,6 +17,7 @@ namespace RPGM.Notes.ViewModels
 
         private bool editMode;
         private Note note;
+        private TextFormatViewModel textFormatViewModel;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
@@ -78,6 +80,11 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
+        public object TextFormat
+        {
+            get { return textFormatViewModel; }
+        }
+
         public string Title
         {
             get { return note != null ? note.Title : null; }
@@ -97,7 +104,7 @@ namespace RPGM.Notes.ViewModels
             return note != null && !string.IsNullOrWhiteSpace(note.Title);
         }
 
-        public override async Task Initialize(object parameter)
+        public override async Task InitializeAsync(object parameter)
         {
             if (parameter is Guid)
             {
@@ -111,6 +118,14 @@ namespace RPGM.Notes.ViewModels
             save.RaiseCanExecuteChanged();
             RaisePropertyChanged("RtfContent");
             RaisePropertyChanged("Title");
+        }
+
+        public async Task InitializeAsync(object parameter, ITextDocument document)
+        {
+            await InitializeAsync(parameter);
+
+            this.textFormatViewModel = new TextFormatViewModel(document);
+            RaisePropertyChanged("TextFormat");
         }
 
         private void OnBackMessage(BackMessage message)

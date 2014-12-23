@@ -126,6 +126,9 @@
   <data name="AppBarEdit.Label" xml:space="preserve">
     <value>edit</value>
   </data>
+  <data name="AppBarFormat.Label" xml:space="preserve">
+    <value>format</value>
+  </data>
   <data name="AppBarSave.Label" xml:space="preserve">
     <value>save</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="DeleteButton.Text" xml:space="preserve">
     <value>delete</value>
+  </data>
+  <data name="FormatTitle.Text" xml:space="preserve">
+    <value>format</value>
   </data>
   <data name="NotesTitle.Text" xml:space="preserve">
     <value>notes</value>
