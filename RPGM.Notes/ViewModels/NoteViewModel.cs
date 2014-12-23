@@ -12,6 +12,7 @@ namespace RPGM.Notes.ViewModels
     public class NoteViewModel : ViewModel
     {
         private readonly ICommand delete;
+        private readonly RelayCommand discard;
         private readonly ICommand edit;
         private readonly RelayCommand save;
 
@@ -26,6 +27,7 @@ namespace RPGM.Notes.ViewModels
             Messenger.Register<BackMessage>(this, OnBackMessage);
 
             delete = new RelayCommand(OnDelete, () => !IsNew);
+            discard = new RelayCommand(OnDiscard, () => IsEditMode);
             edit = new RelayCommand(() => IsEditMode = true);
             save = new RelayCommand(OnSave, CanSave);
 
@@ -38,6 +40,11 @@ namespace RPGM.Notes.ViewModels
         public ICommand DeleteCommand
         {
             get { return delete; }
+        }
+
+        public ICommand DiscardCommand
+        {
+            get { return discard; }
         }
 
         public ICommand EditCommand
@@ -59,6 +66,7 @@ namespace RPGM.Notes.ViewModels
                 {
                     editMode = value;
                     RaisePropertyChanged("IsEditMode");
+                    discard.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -136,11 +144,8 @@ namespace RPGM.Notes.ViewModels
         {
             if (IsEditMode)
             {
-                // Restore note to original as it may have changes
-                // TODO: I really think we should save on back, and handle cancel/discard as the edge case
-                note = new Note(original);
-                RaisePropertyChanged("RtfContent");
-                RaisePropertyChanged("Title");
+                // TODO: Investigate if this method can be async safely
+                Task.Run(() => Database.SaveAsync(note)).Wait();
                 message.Handled = true;
                 IsEditMode = false;
             }
@@ -152,6 +157,15 @@ namespace RPGM.Notes.ViewModels
 
             // TODO: Navigate forward to notes list, and possibly clean back stack
             Navigation.GoBack();
+        }
+
+        private void OnDiscard()
+        {
+            // Restore note to original as it likely has changes
+            note = new Note(original);
+            RaisePropertyChanged("RtfContent");
+            RaisePropertyChanged("Title");
+            IsEditMode = false;
         }
 
         private async void OnSave()
