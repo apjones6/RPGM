@@ -13,13 +13,10 @@ namespace RPGM.Notes.ViewModels
 {
     public class NotesViewModel : ViewModel
     {
-        private readonly ICommand add;
         private readonly ICommand delete;
         private readonly RelayCommand deleteSelection;
         private readonly ObservableCollection<Note> notes = new ObservableCollection<Note>();
-        private readonly ICommand rename;
         private readonly ICommand select;
-        private readonly ICommand tap;
 
         private bool selectable;
         private IList<Note> selectedItems;
@@ -29,12 +26,9 @@ namespace RPGM.Notes.ViewModels
         {
             Messenger.Register<BackMessage>(this, OnBackMessage);
 
-            add = new RelayCommand(() => Navigation.NavigateTo("Rename"));
             delete = new RelayCommand<Guid>(OnDelete);
             deleteSelection = new RelayCommand(OnDeleteSelection, () => selectedItems != null && selectedItems.Count > 0);
-            rename = new RelayCommand<Guid>(x => Navigation.NavigateTo("Rename", x));
             select = new RelayCommand(() => IsSelectable = true);
-            tap = new RelayCommand<Guid>(x => Navigation.NavigateTo("Note", x));
 
             if (IsInDesignMode)
             {
@@ -43,11 +37,6 @@ namespace RPGM.Notes.ViewModels
                 notes.Add(new Note { Title = "Cormac", DateModified = DateTimeOffset.UtcNow.Date.AddHours(-1) });
                 notes.Add(new Note { Title = "Imps", DateModified = DateTimeOffset.UtcNow.AddDays(-10) });
             }
-        }
-
-        public ICommand AddCommand
-        {
-            get { return add; }
         }
 
         public ICommand DeleteCommand
@@ -79,11 +68,6 @@ namespace RPGM.Notes.ViewModels
             get { return notes; }
         }
 
-        public ICommand RenameCommand
-        {
-            get { return rename; }
-        }
-
         public object SelectedItems
         {
             set
@@ -101,11 +85,6 @@ namespace RPGM.Notes.ViewModels
         public ICommand SelectCommand
         {
             get { return select; }
-        }
-
-        public ICommand TapCommand
-        {
-            get { return tap; }
         }
 
         public override async Task InitializeAsync(object parameter)

@@ -16,10 +16,7 @@
             <StackPanel>
                 <i:Interaction.Behaviors>
                     <core:EventTriggerBehavior EventName="Tapped">
-                        <core:InvokeCommandAction
-                            Command="{Binding Path=DataContext.TapCommand, ElementName=Page}"
-                            CommandParameter="{Binding Id}"
-                            />
+                        <core:NavigateToPageAction TargetPage="RPGM.Notes.Pages.Note" Parameter="{Binding Id}" />
                     </core:EventTriggerBehavior>
                     <!-- RightTapped is recommended, but it doesn't occur until user releases -->
                     <core:EventTriggerBehavior EventName="Holding">
@@ -29,12 +26,13 @@
 
                 <FlyoutBase.AttachedFlyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem
-                            x:Uid="RenameButton"
-                            Command="{Binding Path=DataContext.RenameCommand, ElementName=Page}"
-                            CommandParameter="{Binding Id}"
-                            Text="rename"
-                            />
+                        <MenuFlyoutItem x:Uid="RenameButton" Text="rename">
+                            <i:Interaction.Behaviors>
+                                <core:EventTriggerBehavior EventName="Click">
+                                    <core:NavigateToPageAction TargetPage="RPGM.Notes.Pages.Rename" Parameter="{Binding Id}" />
+                                </core:EventTriggerBehavior>
+                            </i:Interaction.Behaviors>
+                        </MenuFlyoutItem>
                         <MenuFlyoutItem
                             x:Uid="DeleteButton"
                             Command="{Binding Path=DataContext.DeleteCommand, ElementName=Page}"
@@ -113,11 +111,15 @@
             <CommandBar.PrimaryCommands>
                 <AppBarButton
                     x:Uid="AppBarAdd"
-                    Command="{Binding AddCommand}"
                     Icon="Add"
                     Label="add"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}"
-                    />
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}">
+                    <i:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="Click">
+                            <core:NavigateToPageAction TargetPage="RPGM.Notes.Pages.Rename" />
+                        </core:EventTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </AppBarButton>
                 <AppBarButton
                     x:Uid="AppBarSelect"
                     Command="{Binding SelectCommand}"
