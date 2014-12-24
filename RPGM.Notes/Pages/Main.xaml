@@ -95,7 +95,7 @@
             ItemContainerStyle="{StaticResource ItemContainerStyle}"
             ItemsSource="{Binding Notes}"
             ItemTemplate="{StaticResource ItemTemplate}"
-            SelectionMode="{Binding IsSelectable, Converter={StaticResource BooleanToSelectionModeConverter}}">
+            SelectionMode="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}}">
             <i:Interaction.Behaviors>
                 <core:EventTriggerBehavior EventName="SelectionChanged">
                     <core:InvokeCommandAction
@@ -116,13 +116,13 @@
                     Command="{Binding AddCommand}"
                     Icon="Add"
                     Label="add"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}"
                     />
                 <AppBarButton
                     x:Uid="AppBarSelect"
                     Command="{Binding SelectCommand}"
                     Label="select"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}">
                     <AppBarButton.Icon>
                         <!-- Same glyph as for Icon="Bullets", but that doesn't work in WP8.1 at present -->
                         <FontIcon FontFamily="Segoe UI Symbol" Glyph="&#xE133;" />
@@ -133,7 +133,7 @@
                     Command="{Binding DeleteSelectionCommand}"
                     Icon="Delete"
                     Label="delete"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}}"
                     />
             </CommandBar.PrimaryCommands>
         </CommandBar>

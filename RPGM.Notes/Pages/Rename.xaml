@@ -52,7 +52,7 @@
                     Command="{Binding DeleteCommand}"
                     Icon="Delete"
                     Label="delete"
-                    Visibility="{Binding IsNew, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
+                    Visibility="{Binding IsNew, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}"
                     />
             </CommandBar.PrimaryCommands>
         </CommandBar>

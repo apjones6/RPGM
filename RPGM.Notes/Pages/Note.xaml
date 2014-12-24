@@ -166,27 +166,27 @@
     </Grid>
 
     <Page.BottomAppBar>
-        <CommandBar Visibility="{Binding Path=TextFormat.IsOpen, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+        <CommandBar Visibility="{Binding Path=TextFormat.IsOpen, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}">
             <CommandBar.PrimaryCommands>
                 <AppBarButton
                     x:Uid="AppBarEdit"
                     Command="{Binding EditCommand}"
                     Icon="Edit"
                     Label="edit"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}"
                     />
                 <AppBarButton
                     x:Uid="AppBarSave"
                     Command="{Binding SaveCommand}"
                     Icon="Save"
                     Label="save"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}}"
                     />
                 <AppBarButton
                     x:Uid="AppBarFormat"
                     Icon="Font"
                     Label="format"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}}">
                     <i:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="Click">
                             <a:OpenFlyoutAction />

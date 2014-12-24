@@ -10,8 +10,7 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     
-    <c:BooleanToSelectionModeConverter x:Key="BooleanToSelectionModeConverter" />
-    <c:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <c:BooleanToUIConverter x:Key="BooleanToUIConverter" />
     <c:SelectionChangedConverter x:Key="SelectionChangedConverter" />
     <c:TimeAgoConverter x:Key="TimeAgoConverter" />
     <n:Injector x:Key="Injector" />

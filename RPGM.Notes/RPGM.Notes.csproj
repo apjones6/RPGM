@@ -90,8 +90,7 @@
     <Compile Include="Controls\Flyout.cs" />
     <Compile Include="Controls\OcclusionPlaceholder.cs" />
     <Compile Include="Controls\RichEditBox.cs" />
-    <Compile Include="Converters\BooleanToSelectionModeConverter.cs" />
-    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\BooleanToUIConverter.cs" />
     <Compile Include="Converters\SelectionChangedConverter.cs" />
     <Compile Include="Converters\TimeAgoConverter.cs" />
     <Compile Include="Messages\BackMessage.cs" />
