@@ -92,7 +92,6 @@
     <Compile Include="Controls\RichEditBox.cs" />
     <Compile Include="Converters\BooleanToUIConverter.cs" />
     <Compile Include="Converters\ObjectPropertyConverter.cs" />
-    <Compile Include="Converters\SelectionChangedConverter.cs" />
     <Compile Include="Converters\TimeAgoConverter.cs" />
     <Compile Include="Messages\BackMessage.cs" />
     <Compile Include="Models\Database.cs" />

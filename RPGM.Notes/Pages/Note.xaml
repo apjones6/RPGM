@@ -151,10 +151,10 @@
                     VerticalAlignment="Stretch">
                     <i:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="SelectionChanged">
-                            <core:InvokeCommandAction
-                                Command="{Binding Path=TextFormat.SelectionChangedCommand}"
-                                InputConverter="{StaticResource SelectionChangedConverter}"
-                                InputConverterParameter="{Binding ElementName=RtfContentBox}"
+                            <core:ChangePropertyAction
+                                PropertyName="Selection"
+                                TargetObject="{Binding TextFormat, Mode=OneWay}"
+                                Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document.Selection}"
                                 />
                         </core:EventTriggerBehavior>
                     </i:Interaction.Behaviors>

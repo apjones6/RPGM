@@ -8,7 +8,6 @@ namespace RPGM.Notes.ViewModels
     {
         private readonly ICommand closed;
         private readonly ICommand opened;
-        private readonly ICommand selectionChanged;
 
         private bool open;
         private ITextSelection selection;
@@ -17,7 +16,6 @@ namespace RPGM.Notes.ViewModels
         {
             this.closed = new RelayCommand(() => IsOpen = false);
             this.opened = new RelayCommand(() => IsOpen = true);
-            this.selectionChanged = new RelayCommand<ITextSelection>(OnSelectionChanged);
         }
 
         public ICommand ClosedCommand
@@ -36,9 +34,17 @@ namespace RPGM.Notes.ViewModels
             get { return opened; }
         }
 
-        public ICommand SelectionChangedCommand
+        public object Selection
         {
-            get { return selectionChanged; }
+            set
+            {
+                selection = (ITextSelection)value;
+
+                RaisePropertyChanged("IsBold");
+                RaisePropertyChanged("IsItalic");
+                RaisePropertyChanged("IsUnderline");
+                RaisePropertyChanged("Selection");
+            }
         }
 
         public bool IsBold
@@ -57,14 +63,6 @@ namespace RPGM.Notes.ViewModels
         {
             get { return selection.CharacterFormat.Underline != UnderlineType.None; }
             set { selection.CharacterFormat.Underline = value ? UnderlineType.Single : UnderlineType.None; }
-        }
-
-        private void OnSelectionChanged(ITextSelection selection)
-        {
-            this.selection = selection;
-            RaisePropertyChanged("IsBold");
-            RaisePropertyChanged("IsItalic");
-            RaisePropertyChanged("IsUnderline");
         }
     }
 }

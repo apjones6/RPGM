@@ -13,17 +13,20 @@ namespace RPGM.Notes.Converters
                 return value;
             }
 
-            var path = parameter.ToString().Split('.');
             var obj = value;
+            var path = parameter.ToString().Split('.');
+            Type type = null;
 
             // Handle dot-notation for properties
             // TODO: Support bracket notation for those property syntaxes
             foreach (var propertyName in path)
             {
-                var property = FindProperty(obj.GetType(), propertyName);
+                // NOTE: Use the property type instead of instance type if available (fix for COM objects)
+                var property = FindProperty(type ?? obj.GetType(), propertyName);
                 if (property != null)
                 {
                     obj = property.GetValue(obj);
+                    type = property.PropertyType;
                 }
                 else
                 {
