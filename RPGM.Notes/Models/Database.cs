@@ -45,6 +45,8 @@ namespace RPGM.Notes.Models
 
         public async Task<IEnumerable<Note>> ListAsync()
         {
+            // TODO: Find a Linq way to exclude RtfContent (and other unnecessary properties)
+            // TODO: Consider direct SQL until above
             return await Table<Note>().OrderByDescending(x => x.DateModified).ToListAsync();
         }
 

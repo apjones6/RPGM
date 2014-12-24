@@ -16,7 +16,7 @@ namespace RPGM.Notes.Pages
             base.OnNavigatedTo(e);
             if (DataContext is ViewModel)
             {
-                await ((ViewModel)DataContext).Initialize(e.Parameter);
+                await ((ViewModel)DataContext).InitializeAsync(e.Parameter);
             }
         }
     }

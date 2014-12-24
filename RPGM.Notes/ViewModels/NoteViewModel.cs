@@ -11,11 +11,14 @@ namespace RPGM.Notes.ViewModels
     public class NoteViewModel : ViewModel
     {
         private readonly ICommand delete;
+        private readonly RelayCommand discard;
         private readonly ICommand edit;
         private readonly RelayCommand save;
+        private readonly TextFormatViewModel textFormat;
 
         private bool editMode;
         private Note note;
+        private Note original;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
@@ -23,8 +26,10 @@ namespace RPGM.Notes.ViewModels
             Messenger.Register<BackMessage>(this, OnBackMessage);
 
             delete = new RelayCommand(OnDelete, () => !IsNew);
+            discard = new RelayCommand(OnDiscard, () => IsEditMode);
             edit = new RelayCommand(() => IsEditMode = true);
             save = new RelayCommand(OnSave, CanSave);
+            textFormat = new TextFormatViewModel();
 
             if (IsInDesignMode)
             {
@@ -35,6 +40,11 @@ namespace RPGM.Notes.ViewModels
         public ICommand DeleteCommand
         {
             get { return delete; }
+        }
+
+        public ICommand DiscardCommand
+        {
+            get { return discard; }
         }
 
         public ICommand EditCommand
@@ -56,6 +66,7 @@ namespace RPGM.Notes.ViewModels
                 {
                     editMode = value;
                     RaisePropertyChanged("IsEditMode");
+                    discard.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -78,6 +89,11 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
+        public object TextFormat
+        {
+            get { return textFormat; }
+        }
+
         public string Title
         {
             get { return note != null ? note.Title : null; }
@@ -97,16 +113,19 @@ namespace RPGM.Notes.ViewModels
             return note != null && !string.IsNullOrWhiteSpace(note.Title);
         }
 
-        public override async Task Initialize(object parameter)
+        public override async Task InitializeAsync(object parameter)
         {
             if (parameter is Guid)
             {
-                note = await Database.GetAsync((Guid)parameter);
+                original = await Database.GetAsync((Guid)parameter);
             }
             else
             {
-                note = new Note();
+                original = new Note();
             }
+
+            // Copy so we can revert changes without database hit
+            note = new Note(original);
 
             save.RaiseCanExecuteChanged();
             RaisePropertyChanged("RtfContent");
@@ -117,6 +136,8 @@ namespace RPGM.Notes.ViewModels
         {
             if (IsEditMode)
             {
+                // TODO: Investigate if this method can be async safely
+                Task.Run(() => Database.SaveAsync(note)).Wait();
                 message.Handled = true;
                 IsEditMode = false;
             }
@@ -128,6 +149,15 @@ namespace RPGM.Notes.ViewModels
 
             // TODO: Navigate forward to notes list, and possibly clean back stack
             Navigation.GoBack();
+        }
+
+        private void OnDiscard()
+        {
+            // Restore note to original as it likely has changes
+            note = new Note(original);
+            RaisePropertyChanged("RtfContent");
+            RaisePropertyChanged("Title");
+            IsEditMode = false;
         }
 
         private async void OnSave()
