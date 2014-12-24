@@ -38,9 +38,9 @@ namespace RPGM.Notes.Pages
         {
             base.OnNavigatedTo(e);
             StatusBar.GetForCurrentView().ForegroundColor = Color.FromArgb(0, 0, 0, 0);
-            if (DataContext is NoteViewModel)
+            if (DataContext is ViewModel)
             {
-                await ((NoteViewModel)DataContext).InitializeAsync(e.Parameter, RtfContentBox.Document);
+                await ((ViewModel)DataContext).InitializeAsync(e.Parameter);
             }
         }
     }

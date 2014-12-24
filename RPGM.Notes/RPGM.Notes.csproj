@@ -83,7 +83,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Actions\FocusAction.cs" />
     <Compile Include="Actions\OpenFlyoutAction.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -94,7 +93,6 @@
     <Compile Include="Converters\BooleanToSelectionModeConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\SelectionChangedConverter.cs" />
-    <Compile Include="Converters\TextFormatViewModelConverter.cs" />
     <Compile Include="Converters\TimeAgoConverter.cs" />
     <Compile Include="Messages\BackMessage.cs" />
     <Compile Include="Models\Database.cs" />

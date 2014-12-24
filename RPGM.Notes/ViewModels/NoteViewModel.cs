@@ -5,7 +5,6 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
 using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
-using Windows.UI.Text;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -15,11 +14,11 @@ namespace RPGM.Notes.ViewModels
         private readonly RelayCommand discard;
         private readonly ICommand edit;
         private readonly RelayCommand save;
+        private readonly TextFormatViewModel textFormat;
 
         private bool editMode;
         private Note note;
         private Note original;
-        private TextFormatViewModel textFormat;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
@@ -30,6 +29,7 @@ namespace RPGM.Notes.ViewModels
             discard = new RelayCommand(OnDiscard, () => IsEditMode);
             edit = new RelayCommand(() => IsEditMode = true);
             save = new RelayCommand(OnSave, CanSave);
+            textFormat = new TextFormatViewModel();
 
             if (IsInDesignMode)
             {
@@ -130,14 +130,6 @@ namespace RPGM.Notes.ViewModels
             save.RaiseCanExecuteChanged();
             RaisePropertyChanged("RtfContent");
             RaisePropertyChanged("Title");
-        }
-
-        public async Task InitializeAsync(object parameter, ITextDocument document)
-        {
-            await InitializeAsync(parameter);
-
-            this.textFormat = new TextFormatViewModel(document);
-            RaisePropertyChanged("TextFormat");
         }
 
         private void OnBackMessage(BackMessage message)

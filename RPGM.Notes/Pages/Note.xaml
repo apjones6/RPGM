@@ -151,7 +151,11 @@
                     VerticalAlignment="Stretch">
                     <i:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="SelectionChanged">
-                            <core:InvokeCommandAction Command="{Binding Path=TextFormat.SelectionChangedCommand}" />
+                            <core:InvokeCommandAction
+                                Command="{Binding Path=TextFormat.SelectionChangedCommand}"
+                                InputConverter="{StaticResource SelectionChangedConverter}"
+                                InputConverterParameter="{Binding ElementName=RtfContentBox}"
+                                />
                         </core:EventTriggerBehavior>
                     </i:Interaction.Behaviors>
                 </c:RichEditBox>
