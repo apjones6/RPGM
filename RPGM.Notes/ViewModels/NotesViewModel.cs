@@ -18,25 +18,23 @@ namespace RPGM.Notes.ViewModels
         private readonly RelayCommand deleteSelection;
         private readonly ObservableCollection<Note> notes = new ObservableCollection<Note>();
         private readonly ICommand rename;
-        private readonly ISet<Guid> selectedIds = new HashSet<Guid>();
-        private readonly ICommand selectionChanged;
         private readonly ICommand select;
         private readonly ICommand tap;
 
         private bool selectable;
+        private IList<Note> selectedItems;
 
         public NotesViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
         {
             Messenger.Register<BackMessage>(this, OnBackMessage);
 
-            add = new RelayCommand(OnAdd);
+            add = new RelayCommand(() => Navigation.NavigateTo("Rename"));
             delete = new RelayCommand<Guid>(OnDelete);
-            deleteSelection = new RelayCommand(OnDeleteSelection, () => selectedIds.Count > 0);
-            rename = new RelayCommand<Guid>(OnRename);
-            selectionChanged = new RelayCommand<IList<object>>(OnSelectionChanged);
-            select = new RelayCommand(OnSelect);
-            tap = new RelayCommand<Guid>(OnTap);
+            deleteSelection = new RelayCommand(OnDeleteSelection, () => selectedItems != null && selectedItems.Count > 0);
+            rename = new RelayCommand<Guid>(x => Navigation.NavigateTo("Rename", x));
+            select = new RelayCommand(() => IsSelectable = true);
+            tap = new RelayCommand<Guid>(x => Navigation.NavigateTo("Note", x));
 
             if (IsInDesignMode)
             {
@@ -71,6 +69,7 @@ namespace RPGM.Notes.ViewModels
                 {
                     selectable = value;
                     RaisePropertyChanged("IsSelectable");
+                    deleteSelection.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -85,9 +84,18 @@ namespace RPGM.Notes.ViewModels
             get { return rename; }
         }
 
-        public ICommand SelectionChangedCommand
+        public object SelectedItems
         {
-            get { return selectionChanged; }
+            set
+            {
+                selectedItems = ((IList<object>)value).Cast<Note>().ToArray();
+
+                // Deselect all items cancels multiple selection mode
+                IsSelectable = selectedItems.Count > 0;
+
+                deleteSelection.RaiseCanExecuteChanged();
+                RaisePropertyChanged("SelectedItems");
+            }
         }
 
         public ICommand SelectCommand
@@ -109,12 +117,6 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        private void OnAdd()
-        {
-            // NOTE: The rename page will create a note as it hasn't an id
-            Navigation.NavigateTo("Rename");
-        }
-
         private void OnBackMessage(BackMessage message)
         {
             if (IsSelectable)
@@ -132,45 +134,16 @@ namespace RPGM.Notes.ViewModels
 
         private async void OnDeleteSelection()
         {
-            var ids = selectedIds.ToArray();
-            foreach (var id in ids)
+            var ids = selectedItems.Select(x => x.Id).ToArray();
+            foreach (var note in selectedItems)
             {
-                notes.Remove(notes.Single(x => x.Id == id));
+                notes.Remove(note);
             }
 
+            // This triggers UI to empty SelectedItems property
             IsSelectable = false;
-            selectedIds.Clear();
 
             await Database.DeleteAsync(ids);
-        }
-
-        private void OnRename(Guid id)
-        {
-            Navigation.NavigateTo("Rename", id);
-        }
-
-        private void OnSelectionChanged(IList<object> items)
-        {
-            selectedIds.Clear();
-            foreach (Note note in items)
-            {
-                selectedIds.Add(note.Id);
-            }
-
-            // Deselect all items cancels multiple selection mode
-            deleteSelection.RaiseCanExecuteChanged();
-            IsSelectable = selectedIds.Any();
-        }
-
-        private void OnSelect()
-        {
-            deleteSelection.RaiseCanExecuteChanged();
-            IsSelectable = true;
-        }
-
-        private void OnTap(Guid id)
-        {
-            Navigation.NavigateTo("Note", id);
         }
     }
 }

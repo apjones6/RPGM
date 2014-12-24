@@ -98,10 +98,10 @@
             SelectionMode="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}}">
             <i:Interaction.Behaviors>
                 <core:EventTriggerBehavior EventName="SelectionChanged">
-                    <core:InvokeCommandAction
-                        Command="{Binding SelectionChangedCommand}"
-                        InputConverter="{StaticResource SelectionChangedConverter}"
-                        InputConverterParameter="{Binding ElementName=NotesListView}"
+                    <core:ChangePropertyAction
+                        PropertyName="SelectedItems"
+                        TargetObject="{Binding Mode=OneWay}"
+                        Value="{Binding ElementName=NotesListView, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=SelectedItems}"
                         />
                 </core:EventTriggerBehavior>
             </i:Interaction.Behaviors>

@@ -11,6 +11,7 @@
     </ResourceDictionary.ThemeDictionaries>
     
     <c:BooleanToUIConverter x:Key="BooleanToUIConverter" />
+    <c:ObjectPropertyConverter x:Key="ObjectPropertyConverter" />
     <c:SelectionChangedConverter x:Key="SelectionChangedConverter" />
     <c:TimeAgoConverter x:Key="TimeAgoConverter" />
     <n:Injector x:Key="Injector" />
