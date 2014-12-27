@@ -4,7 +4,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace RPGM.Notes.Controls
 {
-    public class OcclusionPlaceholder : UserControl
+    public class OcclusionPlaceholder : Control
     {
         public OcclusionPlaceholder()
         {

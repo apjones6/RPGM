@@ -6,7 +6,7 @@ namespace RPGM.Notes.Controls
 {
     public class RichEditBox : Windows.UI.Xaml.Controls.RichEditBox
     {
-        public static readonly DependencyProperty RtfTextProperty = DependencyProperty.Register("RtfText", typeof(string), typeof(RichEditBox), PropertyMetadata.Create(string.Empty, OnRtfTextChanged));
+        public static readonly DependencyProperty RtfTextProperty = DependencyProperty.Register("RtfText", typeof(string), typeof(RichEditBox), new PropertyMetadata(string.Empty, OnRtfTextChanged));
 
         public RichEditBox()
         {
