@@ -58,5 +58,15 @@ namespace RPGM.Notes.Models
             get { return title; }
             set { Set<string>(ref title, value, "Title"); }
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj != null && GetType() == obj.GetType() && Id == ((Note)obj).Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
     }
 }

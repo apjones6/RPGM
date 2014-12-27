@@ -150,6 +150,13 @@
                     Style="{StaticResource RichEditBoxStyle}"
                     VerticalAlignment="Stretch">
                     <i:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="Loaded">
+                            <core:ChangePropertyAction
+                                PropertyName="Document"
+                                TargetObject="{Binding Mode=OneWay}"
+                                Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document}"
+                                />
+                        </core:EventTriggerBehavior>
                         <core:EventTriggerBehavior EventName="SelectionChanged">
                             <core:ChangePropertyAction
                                 PropertyName="Selection"

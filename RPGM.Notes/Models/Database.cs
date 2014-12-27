@@ -47,7 +47,8 @@ namespace RPGM.Notes.Models
         {
             // TODO: Find a Linq way to exclude RtfContent (and other unnecessary properties)
             // TODO: Consider direct SQL until above
-            return await Table<Note>().OrderByDescending(x => x.DateModified).ToListAsync();
+            // TODO: Invesigate what ConfigureAwait does and why it is a fix
+            return await Table<Note>().OrderByDescending(x => x.DateModified).ToListAsync().ConfigureAwait(false);
         }
 
         public async Task SaveAsync(Note note)

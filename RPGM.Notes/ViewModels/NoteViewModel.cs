@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
 using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
+using Windows.UI.Text;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -16,6 +18,7 @@ namespace RPGM.Notes.ViewModels
         private readonly RelayCommand save;
         private readonly TextFormatViewModel textFormat;
 
+        private ITextDocument document;
         private bool editMode;
         private Note note;
         private Note original;
@@ -45,6 +48,18 @@ namespace RPGM.Notes.ViewModels
         public ICommand DiscardCommand
         {
             get { return discard; }
+        }
+
+        public object Document
+        {
+            set
+            {
+                if (document == null)
+                {
+                    InitializeHyperlinks(document = (ITextDocument)value);
+                    RaisePropertyChanged("Document");
+                }
+            }
         }
 
         public ICommand EditCommand
@@ -127,9 +142,40 @@ namespace RPGM.Notes.ViewModels
             // Copy so we can revert changes without database hit
             note = new Note(original);
 
+            // Clear document to reinitialize
+            document = null;
+
             save.RaiseCanExecuteChanged();
             RaisePropertyChanged("RtfContent");
             RaisePropertyChanged("Title");
+        }
+
+        private void InitializeHyperlinks(ITextDocument document)
+        {
+            // TODO: Use an alias table
+            var notes = Task.Run(() => Database.ListAsync()).Result.Except(new[] { note }).ToArray();
+
+            ITextRange range;
+            var len = 0;
+
+            foreach (var n in notes)
+            {
+                var link = string.Format("\"richtea.rpgm://notes/{0}\"", n.Id);
+                var start = 0;
+
+                do
+                {
+                    // TODO: Investigate why this always seems to find more instances of the search
+                    //       text than exists in the document
+                    len = (range = document.GetRange(start, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.None);
+                    if (len > 0)
+                    {
+                        range.Link = link;
+                        start = range.StartPosition + len;
+                    }
+                }
+                while (len > 0);
+            }
         }
 
         private void OnBackMessage(BackMessage message)
