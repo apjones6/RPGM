@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Threading;
 using GalaSoft.MvvmLight.Views;
 using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
@@ -56,7 +57,13 @@ namespace RPGM.Notes.ViewModels
             {
                 if (document == null)
                 {
-                    InitializeHyperlinks(document = (ITextDocument)value);
+                    document = (ITextDocument)value;
+                    if (!string.IsNullOrEmpty(note.RtfContent))
+                    {
+                        document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                        DispatcherHelper.CheckBeginInvokeOnUI(ApplyHyperlinksAsync);
+                    }
+
                     RaisePropertyChanged("Document");
                 }
             }
@@ -82,6 +89,22 @@ namespace RPGM.Notes.ViewModels
                     editMode = value;
                     RaisePropertyChanged("IsEditMode");
                     discard.RaiseCanExecuteChanged();
+
+                    if (value)
+                    {
+                        // Remove links so we don't save them
+                        document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                        //note.RtfContent = original.RtfContent;
+                        //RaisePropertyChanged("RtfContent");
+                    }
+                    //else
+                    //{
+                    //    Task.Run(async () =>
+                    //        {
+                    //            await Task.Delay(5);
+                    //            DispatcherHelper.CheckBeginInvokeOnUI(ApplyHyperlinksAsync);
+                    //        }).Wait();
+                    //}
                 }
             }
         }
@@ -91,18 +114,18 @@ namespace RPGM.Notes.ViewModels
             get { return note != null && note.Id == Guid.Empty; }
         }
 
-        public string RtfContent
-        {
-            get { return note != null ? note.RtfContent : null; }
-            set
-            {
-                if (note != null)
-                {
-                    note.RtfContent = value;
-                    RaisePropertyChanged("RtfContent");
-                }
-            }
-        }
+        //public string RtfContent
+        //{
+        //    get { return note != null ? note.RtfContent : null; }
+        //    set
+        //    {
+        //        if (note != null)
+        //        {
+        //            note.RtfContent = value;
+        //            RaisePropertyChanged("RtfContent");
+        //        }
+        //    }
+        //}
 
         public object TextFormat
         {
@@ -121,6 +144,38 @@ namespace RPGM.Notes.ViewModels
                     save.RaiseCanExecuteChanged();
                 }
             }
+        }
+
+        public async void ApplyHyperlinksAsync()
+        {
+            System.Diagnostics.Debug.WriteLine("ApplyHyperlinks()");
+
+            // NOTE: Attempting to delay here, as possible fix for RichEditBox not being ready?
+            await Task.Delay(50);
+
+            // TODO: Use an alias table
+            var notes = (await Database.ListAsync()).Except(new[] { note }).ToArray();
+
+            // NOTE: Avoid performance implications of many small updates
+            document.BatchDisplayUpdates();
+
+            ITextRange range;
+            foreach (var n in notes)
+            {
+                var link = string.Format("\"richtea.rpgm://notes/{0}\"", n.Id);
+                var skip = 0;
+
+                while ((range = document.GetRange(skip, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.None) != 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("Setting text at position {0} to link: '{1}'.", range.StartPosition, link);
+
+                    // TODO: Stop this throw exceptions
+                    range.Link = link;
+                    skip = range.EndPosition;
+                }
+            }
+
+            document.ApplyDisplayUpdates();
         }
 
         private bool CanSave()
@@ -146,42 +201,18 @@ namespace RPGM.Notes.ViewModels
             document = null;
 
             save.RaiseCanExecuteChanged();
-            RaisePropertyChanged("RtfContent");
+            //RaisePropertyChanged("RtfContent");
             RaisePropertyChanged("Title");
-        }
-
-        private void InitializeHyperlinks(ITextDocument document)
-        {
-            // TODO: Use an alias table
-            var notes = Task.Run(() => Database.ListAsync()).Result.Except(new[] { note }).ToArray();
-
-            ITextRange range;
-            var len = 0;
-
-            foreach (var n in notes)
-            {
-                var link = string.Format("\"richtea.rpgm://notes/{0}\"", n.Id);
-                var start = 0;
-
-                do
-                {
-                    // TODO: Investigate why this always seems to find more instances of the search
-                    //       text than exists in the document
-                    len = (range = document.GetRange(start, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.None);
-                    if (len > 0)
-                    {
-                        range.Link = link;
-                        start = range.StartPosition + len;
-                    }
-                }
-                while (len > 0);
-            }
         }
 
         private void OnBackMessage(BackMessage message)
         {
             if (IsEditMode)
             {
+                string rtfContent;
+                document.GetText(TextGetOptions.FormatRtf, out rtfContent);
+                note.RtfContent = rtfContent;
+
                 // TODO: Investigate if this method can be async safely
                 Task.Run(() => Database.SaveAsync(note)).Wait();
                 message.Handled = true;
@@ -201,14 +232,29 @@ namespace RPGM.Notes.ViewModels
         {
             // Restore note to original as it likely has changes
             note = new Note(original);
-            RaisePropertyChanged("RtfContent");
+            //RaisePropertyChanged("RtfContent");
+            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
             RaisePropertyChanged("Title");
             IsEditMode = false;
         }
 
         private async void OnSave()
         {
+            if (document != null)
+            {
+                string rtfContent;
+                document.GetText(TextGetOptions.FormatRtf, out rtfContent);
+                note.RtfContent = rtfContent;
+
+                System.Diagnostics.Debug.WriteLine("Saving RTF:");
+                System.Diagnostics.Debug.WriteLine(note.RtfContent);
+            }
+
             await Database.SaveAsync(note);
+
+            // Update the stored original for reverting changes
+            // NOTE: This is messy
+            original = new Note(note);
 
             if (!IsEditMode)
             {

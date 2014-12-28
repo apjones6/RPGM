@@ -1,4 +1,5 @@
 using System;
+using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using GalaSoft.MvvmLight.Views;
 using Microsoft.Practices.ServiceLocation;
@@ -7,7 +8,7 @@ using RPGM.Notes.ViewModels;
 
 namespace RPGM.Notes
 {
-    public class Injector : IDisposable
+    public class Injector : ICleanup
     {
         public Injector()
         {
@@ -28,8 +29,8 @@ namespace RPGM.Notes
         {
             get { return ServiceLocator.Current.GetInstance<NoteViewModel>(); }
         }
-        
-        public void Dispose()
+
+        public void Cleanup()
         {
             SimpleIoc.Default.Reset();
         }
