@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Threading;
 using GalaSoft.MvvmLight.Views;
 using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
@@ -59,16 +58,10 @@ namespace RPGM.Notes.ViewModels
             {
                 if (document == null)
                 {
-                    document = (ITextDocument)value;
-                    
-                    // InitializeAsync may not have finished
-                    if (note != null && !string.IsNullOrEmpty(note.RtfContent))
-                    {
-                        document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                        DispatcherHelper.CheckBeginInvokeOnUI(ApplyHyperlinksAsync);
-                    }
+                    Set<ITextDocument>(ref document, (ITextDocument)value, "Document");
 
-                    RaisePropertyChanged("Document");
+                    // This does nothing if note is null
+                    TryInitializeDocument();
                 }
             }
         }
@@ -95,24 +88,17 @@ namespace RPGM.Notes.ViewModels
             {
                 if (editMode != value)
                 {
-                    editMode = value;
-                    RaisePropertyChanged("IsEditMode");
+                    Set<bool>(ref editMode, value, "IsEditMode");
                     discard.RaiseCanExecuteChanged();
 
                     if (value)
                     {
                         // Remove links so we don't save them
                         document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                        //note.RtfContent = original.RtfContent;
-                        //RaisePropertyChanged("RtfContent");
                     }
                     //else
                     //{
-                    //    Task.Run(async () =>
-                    //        {
-                    //            await Task.Delay(5);
-                    //            DispatcherHelper.CheckBeginInvokeOnUI(ApplyHyperlinksAsync);
-                    //        }).Wait();
+                    //    ApplyHyperlinks();
                     //}
                 }
             }
@@ -122,19 +108,6 @@ namespace RPGM.Notes.ViewModels
         {
             get { return note != null && note.Id == Guid.Empty; }
         }
-
-        //public string RtfContent
-        //{
-        //    get { return note != null ? note.RtfContent : null; }
-        //    set
-        //    {
-        //        if (note != null)
-        //        {
-        //            note.RtfContent = value;
-        //            RaisePropertyChanged("RtfContent");
-        //        }
-        //    }
-        //}
 
         public object TextFormat
         {
@@ -155,17 +128,14 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        public async void ApplyHyperlinksAsync()
+        public void ApplyHyperlinks()
         {
             System.Diagnostics.Debug.WriteLine("ApplyHyperlinks()");
 
-            // NOTE: Attempting to delay here, as possible fix for RichEditBox not being ready?
-            await Task.Delay(50);
-
             // TODO: Use an alias table
-            var notes = (await Database.ListAsync()).Except(new[] { note }).ToArray();
+            var notes = Database.ListAsync().Result.Except(new[] { note }).ToArray();
 
-            // NOTE: Avoid performance implications of many small updates
+            // Avoid performance implications of many small updates
             document.BatchDisplayUpdates();
 
             ITextRange range;
@@ -206,17 +176,10 @@ namespace RPGM.Notes.ViewModels
             // Copy so we can revert changes without database hit
             note = new Note(original);
 
-            // Clear document to reinitialize
-            //document = null;
-            // Document property may not have been set yet
-            if (document != null && !string.IsNullOrEmpty(note.RtfContent))
-            {
-                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                DispatcherHelper.CheckBeginInvokeOnUI(ApplyHyperlinksAsync);
-            }
+            // This does nothing if document is null
+            TryInitializeDocument();
 
             save.RaiseCanExecuteChanged();
-            //RaisePropertyChanged("RtfContent");
             RaisePropertyChanged("Title");
         }
 
@@ -247,8 +210,8 @@ namespace RPGM.Notes.ViewModels
         {
             // Restore note to original as it likely has changes
             note = new Note(original);
-            //RaisePropertyChanged("RtfContent");
             document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+            //TryInitializeDocument();
             RaisePropertyChanged("Title");
             IsEditMode = false;
         }
@@ -293,6 +256,16 @@ namespace RPGM.Notes.ViewModels
             }
             
             IsEditMode = false;
+        }
+
+        private void TryInitializeDocument()
+        {
+            // When initialize complete
+            if (document != null && note != null && !string.IsNullOrEmpty(note.RtfContent))
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                ApplyHyperlinks();
+            }
         }
     }
 }
