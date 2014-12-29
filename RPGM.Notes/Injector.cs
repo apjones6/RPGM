@@ -27,7 +27,8 @@ namespace RPGM.Notes
 
         public NoteViewModel Note
         {
-            get { return ServiceLocator.Current.GetInstance<NoteViewModel>(); }
+            // NOTE: Memory leak; if this is the solution we should use a DI which allows transient instances
+            get { return ServiceLocator.Current.GetInstance<NoteViewModel>(Guid.NewGuid().ToString()); }
         }
 
         public void Cleanup()

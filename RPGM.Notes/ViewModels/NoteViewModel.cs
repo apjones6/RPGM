@@ -16,6 +16,7 @@ namespace RPGM.Notes.ViewModels
         private readonly ICommand delete;
         private readonly RelayCommand discard;
         private readonly ICommand edit;
+        private readonly ICommand navigate;
         private readonly RelayCommand save;
         private readonly TextFormatViewModel textFormat;
 
@@ -32,6 +33,7 @@ namespace RPGM.Notes.ViewModels
             delete = new RelayCommand(OnDelete, () => !IsNew);
             discard = new RelayCommand(OnDiscard, () => IsEditMode);
             edit = new RelayCommand(() => IsEditMode = true);
+            navigate = new RelayCommand<Uri>(OnNavigate);
             save = new RelayCommand(OnSave, CanSave);
             textFormat = new TextFormatViewModel();
 
@@ -58,7 +60,9 @@ namespace RPGM.Notes.ViewModels
                 if (document == null)
                 {
                     document = (ITextDocument)value;
-                    if (!string.IsNullOrEmpty(note.RtfContent))
+                    
+                    // InitializeAsync may not have finished
+                    if (note != null && !string.IsNullOrEmpty(note.RtfContent))
                     {
                         document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
                         DispatcherHelper.CheckBeginInvokeOnUI(ApplyHyperlinksAsync);
@@ -72,6 +76,11 @@ namespace RPGM.Notes.ViewModels
         public ICommand EditCommand
         {
             get { return edit; }
+        }
+
+        public ICommand NavigateCommand
+        {
+            get { return navigate; }
         }
 
         public ICommand SaveCommand
@@ -198,7 +207,13 @@ namespace RPGM.Notes.ViewModels
             note = new Note(original);
 
             // Clear document to reinitialize
-            document = null;
+            //document = null;
+            // Document property may not have been set yet
+            if (document != null && !string.IsNullOrEmpty(note.RtfContent))
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                DispatcherHelper.CheckBeginInvokeOnUI(ApplyHyperlinksAsync);
+            }
 
             save.RaiseCanExecuteChanged();
             //RaisePropertyChanged("RtfContent");
@@ -236,6 +251,21 @@ namespace RPGM.Notes.ViewModels
             document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
             RaisePropertyChanged("Title");
             IsEditMode = false;
+        }
+
+        private void OnNavigate(Uri uri)
+        {
+            var parts = uri.AbsoluteUri.ToLower().Replace("richtea.rpgm://", string.Empty).Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var parameter = parts.Length > 1 ? parts[1] : null;
+
+            if (parts[0] == "notes")
+            {
+                Navigation.NavigateTo("Note", Guid.Parse(parameter));
+            }
+            else
+            {
+                // TODO: Throw?
+            }
         }
 
         private async void OnSave()
