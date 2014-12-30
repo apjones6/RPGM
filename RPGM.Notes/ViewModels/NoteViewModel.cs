@@ -135,12 +135,13 @@ namespace RPGM.Notes.ViewModels
             IsEditMode = true;
         }
 
-        // TODO: This shouldn't be async, and causes relayout after view is shown. Need to implement Activate directly?
         protected override async void OnInitialize()
         {
             // TODO: Investigate using constructor parameters
             if (Parameter != null)
             {
+                // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
+                //       thinks we've initialized once we unblock the UI thread
                 original = await Database.GetAsync(Parameter.Value);
             }
             else

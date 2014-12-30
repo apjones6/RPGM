@@ -218,6 +218,7 @@
                     Text="ROLEPLAY GAME MANAGER"
                     />
                 <!-- TODO: Align left on IsEnabled becoming false -->
+                <!-- TODO: OpticalMarginAlignment -->
                 <TextBox
                     x:Name="Title"
                     Grid.Row="1"
