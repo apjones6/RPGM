@@ -137,7 +137,7 @@ namespace RPGM.Notes.ViewModels
 
         protected override async void OnInitialize()
         {
-            // TODO: Investigate using constructor parameters
+            // NOTE: Caliburn navigation by URI parameters does not support Guid
             if (Parameter != null)
             {
                 // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
@@ -146,8 +146,11 @@ namespace RPGM.Notes.ViewModels
             }
             else
             {
-                // NOTE: Possibly temporary default title value while RenameView isn't accessible
+                // TODO: Review whether to use placeholders and apply default on save
                 original = new Note { Title = "New note" };
+
+                // Directly to edit mode for new
+                IsEditMode = true;
             }
 
             // Copy so we can revert changes without database hit
