@@ -135,6 +135,7 @@ namespace RPGM.Notes.ViewModels
             IsEditMode = true;
         }
 
+        // TODO: This shouldn't be async, and causes relayout after view is shown. Need to implement Activate directly?
         protected override async void OnInitialize()
         {
             // TODO: Investigate using constructor parameters

@@ -202,7 +202,7 @@
                         <EntranceThemeTransition />
                     </TransitionCollection>
                 </Grid.ChildrenTransitions>
-                
+
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -217,19 +217,13 @@
                     Style="{StaticResource TitleTextBlockStyle}"
                     Text="ROLEPLAY GAME MANAGER"
                     />
-                <TextBlock
-                    Grid.Row="1"
-                    Margin="0,-6.5,0,26.5"
-                    Style="{StaticResource HeaderTextBlockStyle}"
-                    Text="{Binding Title}"
-                    Visibility="{Binding IsNotEditMode, Converter={StaticResource BoolToVisibility}}"
-                    />
+                <!-- TODO: Align left on IsEnabled becoming false -->
                 <TextBox
                     x:Name="Title"
                     Grid.Row="1"
+                    IsEnabled="{Binding IsEditMode}"
                     Margin="0,-6.5,0,26.5"
                     Style="{StaticResource HeaderTextBoxStyle}"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}"
                     />
                 <c:RichEditBox
                     x:Name="RtfContentBox"
