@@ -11,8 +11,8 @@ namespace RPGM.Notes.ViewModels
     {
         private readonly ObservableCollection<Note> notes = new ObservableCollection<Note>();
 
-        private bool selectable;
         private IList<Note> selectedItems;
+        private bool selectMode;
 
         public MainViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
@@ -24,16 +24,22 @@ namespace RPGM.Notes.ViewModels
             get { return selectedItems != null && selectedItems.Count > 0; }
         }
 
-        public bool IsSelectable
+        public bool IsNotSelectMode
         {
-            get { return selectable; }
+            get { return !selectMode; }
+        }
+
+        public bool IsSelectMode
+        {
+            get { return selectMode; }
             set
             {
-                if (selectable != value)
+                if (selectMode != value)
                 {
-                    selectable = value;
+                    selectMode = value;
                     NotifyOfPropertyChange(() => CanDeleteSelected);
-                    NotifyOfPropertyChange(() => IsSelectable);
+                    NotifyOfPropertyChange(() => IsNotSelectMode);
+                    NotifyOfPropertyChange(() => IsSelectMode);
 
                     if (value)
                     {
@@ -61,7 +67,7 @@ namespace RPGM.Notes.ViewModels
                 selectedItems = ((IList<object>)value).Cast<Note>().ToArray();
 
                 // Deselect all items cancels multiple selection mode
-                IsSelectable = selectedItems.Count > 0;
+                IsSelectMode = selectedItems.Count > 0;
 
                 NotifyOfPropertyChange(() => CanDeleteSelected);
                 NotifyOfPropertyChange(() => SelectedItems);
@@ -76,7 +82,7 @@ namespace RPGM.Notes.ViewModels
         private void BackPressed(object sender, BackPressedEventArgs e)
         {
             // Setting this false removes the handler
-            IsSelectable = false;
+            IsSelectMode = false;
             e.Handled = true;
         }
 
@@ -95,7 +101,7 @@ namespace RPGM.Notes.ViewModels
             }
 
             // This triggers UI to empty SelectedItems property
-            IsSelectable = false;
+            IsSelectMode = false;
 
             await Database.DeleteAsync(ids);
         }
@@ -110,7 +116,7 @@ namespace RPGM.Notes.ViewModels
 
         public void Select()
         {
-            IsSelectable = true;
+            IsSelectMode = true;
         }
 
         public void View(Note note)

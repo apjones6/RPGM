@@ -1,7 +1,8 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:c="using:RPGM.Notes.Converters">
+    xmlns:c="using:RPGM.Notes.Converters"
+    xmlns:cal="using:Caliburn.Micro">
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
@@ -9,7 +10,8 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     
-    <c:BooleanToUIConverter x:Key="BooleanToUIConverter" />
+    <c:BooleanToSelectionModeConverter x:Key="BoolToSelectionMode" />
+    <cal:BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     <c:ObjectPropertyConverter x:Key="ObjectPropertyConverter" />
     <c:TimeAgoConverter x:Key="TimeAgoConverter" />
 

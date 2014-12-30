@@ -187,26 +187,6 @@
         		</Setter.Value>
         	</Setter>
         </Style>
-        <x:Double x:Key="TextStyleLargeFontSize">18.14</x:Double>
-        <Style x:Key="BaseTextBlockStyle" TargetType="TextBlock">
-        	<Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}"/>
-        	<Setter Property="FontSize" Value="{ThemeResource TextStyleLargeFontSize}"/>
-        	<Setter Property="Foreground" Value="{ThemeResource PhoneForegroundBrush}"/>
-        	<Setter Property="TextTrimming" Value="Clip"/>
-        	<Setter Property="TextWrapping" Value="WrapWholeWords"/>
-        	<Setter Property="LineHeight" Value="21.5"/>
-        	<Setter Property="LineStackingStrategy" Value="BaselineToBaseline"/>
-        	<Setter Property="TextLineBounds" Value="Full"/>
-        	<Setter Property="OpticalMarginAlignment" Value="TrimSideBearings"/>
-        </Style>
-        <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe WP SemiLight</FontFamily>
-        <Style x:Key="HeaderTextBlockStyleCopy" BasedOn="{StaticResource BaseTextBlockStyle}" TargetType="TextBlock">
-        	<Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}"/>
-        	<Setter Property="FontSize" Value="57.5"/>
-        	<Setter Property="FontWeight" Value="SemiLight"/>
-        	<Setter Property="LineHeight" Value="57.5"/>
-        	<Setter Property="TextWrapping" Value="NoWrap"/>
-        </Style>
     </Page.Resources>
     
     <Grid Margin="19,0,0,0">
@@ -240,16 +220,16 @@
                 <TextBlock
                     Grid.Row="1"
                     Margin="0,-6.5,0,26.5"
-                    Style="{StaticResource HeaderTextBlockStyleCopy}"
+                    Style="{StaticResource HeaderTextBlockStyle}"
                     Text="{Binding Title}"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}"
+                    Visibility="{Binding IsNotEditMode, Converter={StaticResource BoolToVisibility}}"
                     />
                 <TextBox
                     x:Name="Title"
                     Grid.Row="1"
                     Margin="0,-6.5,0,26.5"
                     Style="{StaticResource HeaderTextBoxStyle}"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}}"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}"
                     />
                 <c:RichEditBox
                     x:Name="RtfContentBox"
@@ -279,27 +259,27 @@
     </Grid>
 
     <Page.BottomAppBar>
-        <CommandBar Visibility="{Binding Path=TextFormat.IsOpen, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}">
+        <CommandBar Visibility="{Binding Path=TextFormat.IsNotOpen, Converter={StaticResource BoolToVisibility}}">
             <CommandBar.PrimaryCommands>
                 <AppBarButton
                     x:Name="Edit"
                     x:Uid="AppBarEdit"
                     Icon="Edit"
                     Label="edit"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}"
+                    Visibility="{Binding IsNotEditMode, Converter={StaticResource BoolToVisibility}}"
                     />
                 <AppBarButton
                     x:Name="Save"
                     x:Uid="AppBarSave"
                     Icon="Save"
                     Label="save"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}}"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}"
                     />
                 <AppBarButton
                     x:Uid="AppBarFormat"
                     Icon="Font"
                     Label="format"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}}">
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}">
                     <i:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="Click">
                             <a:OpenFlyoutAction />

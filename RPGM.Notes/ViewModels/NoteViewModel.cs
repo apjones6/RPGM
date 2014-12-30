@@ -43,6 +43,7 @@ namespace RPGM.Notes.ViewModels
                     editMode = value;
                     NotifyOfPropertyChange(() => CanDiscard);
                     NotifyOfPropertyChange(() => IsEditMode);
+                    NotifyOfPropertyChange(() => IsNotEditMode);
 
                     if (value)
                     {
@@ -59,6 +60,11 @@ namespace RPGM.Notes.ViewModels
         public bool IsNew
         {
             get { return note != null && note.Id == Guid.Empty; }
+        }
+
+        public bool IsNotEditMode
+        {
+            get { return !editMode; }
         }
 
         public Guid? Parameter { get; set; }

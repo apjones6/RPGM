@@ -19,12 +19,18 @@ namespace RPGM.Notes.ViewModels
             set { selection.CharacterFormat.Italic = value ? FormatEffect.On : FormatEffect.Off; }
         }
 
+        public bool IsNotOpen
+        {
+            get { return !open; }
+        }
+
         public bool IsOpen
         {
             get { return open; }
             set
             {
                 open = value;
+                NotifyOfPropertyChange(() => IsNotOpen);
                 NotifyOfPropertyChange(() => IsOpen);
             }
         }

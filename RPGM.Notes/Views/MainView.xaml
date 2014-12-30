@@ -88,7 +88,7 @@
             ItemContainerStyle="{StaticResource ItemContainerStyle}"
             ItemsSource="{Binding Notes}"
             ItemTemplate="{StaticResource ItemTemplate}"
-            SelectionMode="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}}">
+            SelectionMode="{Binding IsSelectMode, Converter={StaticResource BoolToSelectionMode}}">
             <i:Interaction.Behaviors>
                 <!-- TODO: Tidy this if we can -->
                 <core:EventTriggerBehavior EventName="SelectionChanged">
@@ -110,13 +110,13 @@
                     x:Uid="AppBarAdd"
                     Icon="Add"
                     Label="add"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}"
+                    Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}"
                     />
                 <AppBarButton
                     x:Name="Select"
                     x:Uid="AppBarSelect"
                     Label="select"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}">
+                    Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}">
                     <AppBarButton.Icon>
                         <!-- Same glyph as for Icon="Bullets", but that doesn't work in WP8.1 at present -->
                         <FontIcon FontFamily="Segoe UI Symbol" Glyph="&#xE133;" />
@@ -127,7 +127,7 @@
                     x:Uid="AppBarDelete"
                     Icon="Delete"
                     Label="delete"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}}"
+                    Visibility="{Binding IsSelectMode, Converter={StaticResource BoolToVisibility}}"
                     />
             </CommandBar.PrimaryCommands>
         </CommandBar>
