@@ -156,4 +156,7 @@
   <data name="RenameTitle.Text" xml:space="preserve">
     <value>rename</value>
   </data>
+  <data name="TextBoxRtfContent.PlaceholderText" xml:space="preserve">
+    <value>Type here...</value>
+  </data>
 </root>

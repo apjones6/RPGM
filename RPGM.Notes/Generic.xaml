@@ -1,8 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:c="using:RPGM.Notes.Converters"
-    xmlns:n="using:RPGM.Notes">
+    xmlns:c="using:RPGM.Notes.Converters">
     
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
@@ -13,18 +12,14 @@
     <c:BooleanToUIConverter x:Key="BooleanToUIConverter" />
     <c:ObjectPropertyConverter x:Key="ObjectPropertyConverter" />
     <c:TimeAgoConverter x:Key="TimeAgoConverter" />
-    <n:Injector x:Key="Injector" />
 
+    <!-- TODO: Use it or lose it -->
     <TransitionCollection x:Key="ContinuumTransition">
         <NavigationThemeTransition>
             <NavigationThemeTransition.DefaultNavigationTransitionInfo>
                 <ContinuumNavigationTransitionInfo />
             </NavigationThemeTransition.DefaultNavigationTransitionInfo>
         </NavigationThemeTransition>
-    </TransitionCollection>
-
-    <TransitionCollection x:Key="EntranceTransition">
-        <EntranceThemeTransition />
     </TransitionCollection>
 
 </ResourceDictionary>

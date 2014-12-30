@@ -1,15 +1,14 @@
-﻿using RPGM.Notes.ViewModels;
-using Windows.UI;
+﻿using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace RPGM.Notes.Pages
+namespace RPGM.Notes.Views
 {
-    public sealed partial class Note : Page
+    public sealed partial class NoteView : Page
     {
-        public Note()
+        public NoteView()
         {
             this.InitializeComponent();
         }
@@ -30,18 +29,14 @@ namespace RPGM.Notes.Pages
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            base.OnNavigatedFrom(e);
+            // TODO: Handle with IViewAware ViewModel
             StatusBar.GetForCurrentView().ForegroundColor = null;
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            base.OnNavigatedTo(e);
+            // TODO: Handle with IViewAware ViewModel
             StatusBar.GetForCurrentView().ForegroundColor = Color.FromArgb(0, 0, 0, 0);
-            if (DataContext is ViewModel)
-            {
-                await ((ViewModel)DataContext).InitializeAsync(e.Parameter);
-            }
         }
     }
 }

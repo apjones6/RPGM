@@ -34,7 +34,7 @@ namespace RPGM.Notes.Models
         {
             foreach (var id in ids)
             {
-                await DeleteAsync<Note>(id);
+                await DeleteAsync<Note>(id).ConfigureAwait(false);
             }
         }
 
@@ -47,17 +47,17 @@ namespace RPGM.Notes.Models
         {
             // TODO: Find a Linq way to exclude RtfContent (and other unnecessary properties)
             // TODO: Consider direct SQL until above
-            return await Table<Note>().OrderByDescending(x => x.DateModified).ToListAsync();
+            return await Table<Note>().OrderByDescending(x => x.DateModified).ToListAsync().ConfigureAwait(false);
         }
 
-        public async Task SaveAsync(Note note)
+        public Task SaveAsync(Note note)
         {
             // Set/update dates
             var now = DateTimeOffset.UtcNow;
             if (note.Id == Guid.Empty) note.DateCreated = now;
             note.DateModified = now;
 
-            await InsertOrReplaceAsync(note);
+            return InsertOrReplaceAsync(note);
         }
 
         private class RPGMConnection : SQLiteConnectionWithLock

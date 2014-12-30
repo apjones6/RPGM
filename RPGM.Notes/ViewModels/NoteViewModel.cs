@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Views;
-using RPGM.Notes.Messages;
+using Caliburn.Micro;
 using RPGM.Notes.Models;
+using Windows.Phone.UI.Input;
 
 namespace RPGM.Notes.ViewModels
 {
     public class NoteViewModel : ViewModel
     {
-        private readonly ICommand delete;
-        private readonly RelayCommand discard;
-        private readonly ICommand edit;
-        private readonly RelayCommand save;
-        private readonly TextFormatViewModel textFormat;
+        private readonly TextFormatViewModel textFormat = new TextFormatViewModel();
 
         private bool editMode;
         private Note note;
@@ -23,38 +16,21 @@ namespace RPGM.Notes.ViewModels
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
         {
-            Messenger.Register<BackMessage>(this, OnBackMessage);
-
-            delete = new RelayCommand(OnDelete, () => !IsNew);
-            discard = new RelayCommand(OnDiscard, () => IsEditMode);
-            edit = new RelayCommand(() => IsEditMode = true);
-            save = new RelayCommand(OnSave, CanSave);
-            textFormat = new TextFormatViewModel();
-
-            if (IsInDesignMode)
-            {
-                note = new Note { RtfContent = @"{\rtf1\ansi This is RTF content...}", Title = "Story ideas" };
-            }
         }
 
-        public ICommand DeleteCommand
+        public bool CanDelete
         {
-            get { return delete; }
+            get { return !IsNew; }
         }
 
-        public ICommand DiscardCommand
+        public bool CanDiscard
         {
-            get { return discard; }
+            get { return IsEditMode; }
         }
 
-        public ICommand EditCommand
+        public bool CanSave
         {
-            get { return edit; }
-        }
-
-        public ICommand SaveCommand
-        {
-            get { return save; }
+            get { return note != null && !string.IsNullOrWhiteSpace(note.Title); }
         }
 
         public bool IsEditMode
@@ -65,8 +41,17 @@ namespace RPGM.Notes.ViewModels
                 if (editMode != value)
                 {
                     editMode = value;
-                    RaisePropertyChanged("IsEditMode");
-                    discard.RaiseCanExecuteChanged();
+                    NotifyOfPropertyChange(() => CanDiscard);
+                    NotifyOfPropertyChange(() => IsEditMode);
+
+                    if (value)
+                    {
+                        Navigation.BackPressed += BackPressed;
+                    }
+                    else
+                    {
+                        Navigation.BackPressed -= BackPressed;
+                    }
                 }
             }
         }
@@ -76,6 +61,8 @@ namespace RPGM.Notes.ViewModels
             get { return note != null && note.Id == Guid.Empty; }
         }
 
+        public Guid? Parameter { get; set; }
+
         public string RtfContent
         {
             get { return note != null ? note.RtfContent : null; }
@@ -84,12 +71,12 @@ namespace RPGM.Notes.ViewModels
                 if (note != null)
                 {
                     note.RtfContent = value;
-                    RaisePropertyChanged("RtfContent");
+                    NotifyOfPropertyChange(() => RtfContent);
                 }
             }
         }
 
-        public object TextFormat
+        public TextFormatViewModel TextFormat
         {
             get { return textFormat; }
         }
@@ -102,75 +89,74 @@ namespace RPGM.Notes.ViewModels
                 if (note != null)
                 {
                     note.Title = value;
-                    RaisePropertyChanged("Title");
-                    save.RaiseCanExecuteChanged();
+                    NotifyOfPropertyChange(() => CanSave);
+                    NotifyOfPropertyChange(() => RtfContent);
+                    NotifyOfPropertyChange(() => Title);
                 }
             }
         }
 
-        private bool CanSave()
+        private void BackPressed(object sender, BackPressedEventArgs e)
         {
-            return note != null && !string.IsNullOrWhiteSpace(note.Title);
+            // Setting this false removes the handler
+            IsEditMode = false;
+            Database.SaveAsync(note).Wait();
+            e.Handled = true;
         }
 
-        public override async Task InitializeAsync(object parameter)
-        {
-            if (parameter is Guid)
-            {
-                original = await Database.GetAsync((Guid)parameter);
-            }
-            else
-            {
-                original = new Note();
-            }
-
-            // Copy so we can revert changes without database hit
-            note = new Note(original);
-
-            save.RaiseCanExecuteChanged();
-            RaisePropertyChanged("RtfContent");
-            RaisePropertyChanged("Title");
-        }
-
-        private void OnBackMessage(BackMessage message)
-        {
-            if (IsEditMode)
-            {
-                // TODO: Investigate if this method can be async safely
-                Task.Run(() => Database.SaveAsync(note)).Wait();
-                message.Handled = true;
-                IsEditMode = false;
-            }
-        }
-
-        private async void OnDelete()
+        public async void Delete()
         {
             await Database.DeleteAsync(note.Id);
+
+            // NOTE: Don't just close edit
+            IsEditMode = false;
 
             // TODO: Navigate forward to notes list, and possibly clean back stack
             Navigation.GoBack();
         }
 
-        private void OnDiscard()
+        public void Discard()
         {
             // Restore note to original as it likely has changes
             note = new Note(original);
-            RaisePropertyChanged("RtfContent");
-            RaisePropertyChanged("Title");
+            NotifyOfPropertyChange(() => RtfContent);
+            NotifyOfPropertyChange(() => Title);
             IsEditMode = false;
         }
 
-        private async void OnSave()
+        public void Edit()
+        {
+            IsEditMode = true;
+        }
+
+        protected override async void OnInitialize()
+        {
+            // TODO: Investigate using constructor parameters
+            if (Parameter != null)
+            {
+                original = await Database.GetAsync(Parameter.Value);
+            }
+            else
+            {
+                // NOTE: Possibly temporary default title value while RenameView isn't accessible
+                original = new Note { Title = "New note" };
+            }
+
+            // Copy so we can revert changes without database hit
+            note = new Note(original);
+
+            NotifyOfPropertyChange(() => CanSave);
+            NotifyOfPropertyChange(() => RtfContent);
+            NotifyOfPropertyChange(() => Title);
+        }
+
+        public async void Save()
         {
             await Database.SaveAsync(note);
-
-            if (!IsEditMode)
-            {
-                // TODO: Navigate to note contents (sometimes?)
-                Navigation.GoBack();
-            }
-            
             IsEditMode = false;
+
+            NotifyOfPropertyChange(() => CanDelete);
+            NotifyOfPropertyChange(() => IsNew);
         }
     }
 }
