@@ -142,6 +142,15 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Focused">
+                                        <Storyboard>
+                                            <DoubleAnimation Duration="0" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PlaceholderTextContentPresenter"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
                             <Border
                                 x:Name="BorderElement"
                                 Grid.Row="1"
@@ -175,8 +184,8 @@
         					<ContentControl
                                 x:Name="PlaceholderTextContentPresenter"
                                 Content="{TemplateBinding PlaceholderText}"
-                                Foreground="{ThemeResource PhoneForegroundBrush}"
-                                FontSize="{ThemeResource ContentControlFontSize}"
+                                Foreground="{ThemeResource TextBoxPlaceholderTextThemeBrush}"
+                                FontSize="57.5"
                                 IsTabStop="False"
                                 Margin="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
@@ -221,9 +230,11 @@
                 <!-- TODO: OpticalMarginAlignment -->
                 <TextBox
                     x:Name="Title"
+                    x:Uid="TextBoxTitle"
                     Grid.Row="1"
                     IsEnabled="{Binding IsEditMode}"
                     Margin="0,-6.5,0,26.5"
+                    PlaceholderText="Note"
                     Style="{StaticResource HeaderTextBoxStyle}"
                     />
                 <c:RichEditBox
@@ -233,6 +244,7 @@
                     Grid.Row="2"
                     IsEnabled="{Binding IsEditMode}"
                     Margin="0,0,19,0"
+                    PlaceholderText="Type here..."
                     RtfText="{Binding RtfContent, Mode=TwoWay}"
                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
                     Style="{StaticResource RichEditBoxStyle}"

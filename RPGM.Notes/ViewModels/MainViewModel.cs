@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Caliburn.Micro;
 using RPGM.Notes.Models;
-using Windows.Phone.UI.Input;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -34,22 +34,10 @@ namespace RPGM.Notes.ViewModels
             get { return selectMode; }
             set
             {
-                if (selectMode != value)
-                {
-                    selectMode = value;
-                    NotifyOfPropertyChange(() => CanDeleteSelected);
-                    NotifyOfPropertyChange(() => IsNotSelectMode);
-                    NotifyOfPropertyChange(() => IsSelectMode);
-
-                    if (value)
-                    {
-                        Navigation.BackPressed += BackPressed;
-                    }
-                    else
-                    {
-                        Navigation.BackPressed -= BackPressed;
-                    }
-                }
+                selectMode = value;
+                NotifyOfPropertyChange(() => CanDeleteSelected);
+                NotifyOfPropertyChange(() => IsNotSelectMode);
+                NotifyOfPropertyChange(() => IsSelectMode);
             }
         }
 
@@ -79,11 +67,19 @@ namespace RPGM.Notes.ViewModels
             Navigation.NavigateToViewModel<NoteViewModel>();
         }
 
-        private void BackPressed(object sender, BackPressedEventArgs e)
+        public override void CanClose(Action<bool> callback)
         {
-            // Setting this false removes the handler
-            IsSelectMode = false;
-            e.Handled = true;
+            // NOTE: Unfortunately if the application is looking to exit, it will do so
+            //       without waiting for the callback
+            if (IsSelectMode)
+            {
+                IsSelectMode = false;
+                callback(false);
+            }
+            else
+            {
+                callback(true);
+            }
         }
 
         public async void Delete(Note note)

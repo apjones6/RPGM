@@ -1,7 +1,6 @@
 ﻿using System;
 using Caliburn.Micro;
 using RPGM.Notes.Models;
-using Windows.Phone.UI.Input;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -38,22 +37,10 @@ namespace RPGM.Notes.ViewModels
             get { return editMode; }
             set
             {
-                if (editMode != value)
-                {
-                    editMode = value;
-                    NotifyOfPropertyChange(() => CanDiscard);
-                    NotifyOfPropertyChange(() => IsEditMode);
-                    NotifyOfPropertyChange(() => IsNotEditMode);
-
-                    if (value)
-                    {
-                        Navigation.BackPressed += BackPressed;
-                    }
-                    else
-                    {
-                        Navigation.BackPressed -= BackPressed;
-                    }
-                }
+                editMode = value;
+                NotifyOfPropertyChange(() => CanDiscard);
+                NotifyOfPropertyChange(() => IsEditMode);
+                NotifyOfPropertyChange(() => IsNotEditMode);
             }
         }
 
@@ -102,12 +89,19 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        private void BackPressed(object sender, BackPressedEventArgs e)
+        public override async void CanClose(Action<bool> callback)
         {
-            // Setting this false removes the handler
-            IsEditMode = false;
-            Database.SaveAsync(note).Wait();
-            e.Handled = true;
+            // NOTE: If we can't save, we're discarding, but we should probably show message
+            if (IsEditMode && !IsNew && CanSave)
+            {
+                IsEditMode = false;
+                callback(false);
+                await Database.SaveAsync(note);
+            }
+            else
+            {
+                callback(true);
+            }
         }
 
         public async void Delete()
@@ -146,8 +140,7 @@ namespace RPGM.Notes.ViewModels
             }
             else
             {
-                // TODO: Review whether to use placeholders and apply default on save
-                original = new Note { Title = "New note" };
+                original = new Note();
 
                 // Directly to edit mode for new
                 IsEditMode = true;

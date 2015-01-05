@@ -159,4 +159,7 @@
   <data name="TextBoxRtfContent.PlaceholderText" xml:space="preserve">
     <value>Type here...</value>
   </data>
+  <data name="TextBoxTitle.PlaceholderText" xml:space="preserve">
+    <value>Note</value>
+  </data>
 </root>
