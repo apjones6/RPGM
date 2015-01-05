@@ -69,8 +69,7 @@ namespace RPGM.Notes.ViewModels
 
         public override void CanClose(Action<bool> callback)
         {
-            // NOTE: Unfortunately if the application is looking to exit, it will do so
-            //       without waiting for the callback
+            // NOTE: This is not closed on suspend for some reason until resume (counterproductively)
             if (IsSelectMode)
             {
                 IsSelectMode = false;

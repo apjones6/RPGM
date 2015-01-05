@@ -91,7 +91,7 @@ namespace RPGM.Notes.ViewModels
 
         public override async void CanClose(Action<bool> callback)
         {
-            // NOTE: If we can't save, we're discarding, but we should probably show message
+            // NOTE: If we can't save, we're discarding, but we should probably show a message
             if (IsEditMode && !IsNew && CanSave)
             {
                 IsEditMode = false;
