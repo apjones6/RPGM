@@ -41,7 +41,6 @@
                     />
             </StackPanel>
         </DataTemplate>
-
         <Style x:Key="ItemContainerStyle" TargetType="ListViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Transitions">

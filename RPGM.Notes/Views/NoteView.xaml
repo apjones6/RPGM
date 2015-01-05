@@ -250,6 +250,7 @@
                     Style="{StaticResource RichEditBoxStyle}"
                     VerticalAlignment="Stretch">
                     <i:Interaction.Behaviors>
+                        <!-- TODO: Tidy this if we can -->
                         <core:EventTriggerBehavior EventName="SelectionChanged">
                             <core:ChangePropertyAction
                                 PropertyName="Selection"
