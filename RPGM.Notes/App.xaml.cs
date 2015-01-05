@@ -43,8 +43,11 @@ namespace RPGM.Notes
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            // NOTE: ViewModel-first approach here causes issues with navigation and back pressed events
-            DisplayRootView<MainView>();
+            if (args.PreviousExecutionState != ApplicationExecutionState.Running)
+            {
+                // NOTE: ViewModel-first approach here causes issues with navigation and back pressed events
+                DisplayRootView<MainView>();
+            }
         }
 
         protected override void PrepareViewFirst(Frame rootFrame)

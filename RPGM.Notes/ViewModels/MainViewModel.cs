@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Caliburn.Micro;
 using RPGM.Notes.Models;
+using Windows.Phone.UI.Input;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -67,19 +68,29 @@ namespace RPGM.Notes.ViewModels
             Navigation.NavigateToViewModel<NoteViewModel>();
         }
 
-        public override void CanClose(Action<bool> callback)
+        private void BackPressed(object sender, BackPressedEventArgs e)
         {
-            // NOTE: This is not closed on suspend for some reason until resume (counterproductively)
             if (IsSelectMode)
             {
                 IsSelectMode = false;
-                callback(false);
-            }
-            else
-            {
-                callback(true);
+                e.Handled = true;
             }
         }
+
+        //public override void CanClose(Action<bool> callback)
+        //{
+        //    // NOTE: This is not closed on suspend for some reason until resume (counterproductively)
+        //    //       Therefore we implement a BackPressed handler explicitly
+        //    if (IsSelectMode)
+        //    {
+        //        IsSelectMode = false;
+        //        callback(false);
+        //    }
+        //    else
+        //    {
+        //        callback(true);
+        //    }
+        //}
 
         public async void Delete(Note note)
         {
@@ -99,6 +110,16 @@ namespace RPGM.Notes.ViewModels
             IsSelectMode = false;
 
             await Database.DeleteAsync(ids);
+        }
+
+        protected override void OnActivate()
+        {
+            HardwareButtons.BackPressed += BackPressed;
+        }
+
+        protected override void OnDeactivate(bool close)
+        {
+            HardwareButtons.BackPressed -= BackPressed;
         }
 
         protected override async void OnInitialize()
