@@ -146,10 +146,12 @@ namespace RPGM.Notes.ViewModels
                 {
                     // NOTE: Set the document selection as workaround to prevent intermittent AccessViolationException,
                     //       probably caused by a timing issue in the lower level code
-                    document.Selection.StartPosition = document.Selection.EndPosition = range.StartPosition;
-                    range.Link = link;
-                    skip = range.EndPosition;
-                    document.Selection.StartPosition = document.Selection.EndPosition = range.EndPosition;
+                    using (new SuppressSelection(document))
+                    {
+                        range.CharacterFormat.ForegroundColor = AccentColor;
+                        range.Link = link;
+                        skip = range.EndPosition;
+                    }
                 }
             }
 
@@ -260,6 +262,29 @@ namespace RPGM.Notes.ViewModels
             {
                 document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
                 ApplyHyperlinks();
+            }
+        }
+
+        private class SuppressSelection : IDisposable
+        {
+            private readonly ITextDocument document;
+            private readonly int start;
+            private readonly int end;
+
+            public SuppressSelection(ITextDocument document)
+            {
+                if (document == null) throw new ArgumentNullException("document");
+
+                this.document = document;
+                this.start = document.Selection.StartPosition;
+                this.end = document.Selection.EndPosition;
+
+                document.Selection.SetRange(0, 0);
+            }
+
+            public void Dispose()
+            {
+                document.Selection.SetRange(start, end);
             }
         }
     }
