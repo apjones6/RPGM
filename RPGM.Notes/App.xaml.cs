@@ -1,5 +1,6 @@
 ﻿using System;
 using Caliburn.Micro;
+using RPGM.Notes.Controls;
 using RPGM.Notes.Models;
 using RPGM.Notes.ViewModels;
 using RPGM.Notes.Views;
@@ -20,6 +21,9 @@ namespace RPGM.Notes
         protected override void Configure()
         {
             container = new WinRTContainer();
+
+            // Register UI values
+            MessageBinder.SpecialValues.Add("$navigateuri", c => ((NavigationEventArgs)c.EventArgs).Uri);
 
             // Register components
             container.RegisterWinRTServices();

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Caliburn.Micro;
 using RPGM.Notes.Models;
+using Windows.UI.Text;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -8,6 +11,7 @@ namespace RPGM.Notes.ViewModels
     {
         private readonly TextFormatViewModel textFormat = new TextFormatViewModel();
 
+        private ITextDocument document;
         private bool editMode;
         private Note note;
         private Note original;
@@ -32,15 +36,50 @@ namespace RPGM.Notes.ViewModels
             get { return note != null && !string.IsNullOrWhiteSpace(note.Title); }
         }
 
+        public object Document
+        {
+            get { return document; }
+            set
+            {
+                if (document == null)
+                {
+                    document = (ITextDocument)value;
+                    NotifyOfPropertyChange(() => Document);
+
+                    if (note != null && !string.IsNullOrEmpty(note.RtfContent))
+                    {
+                        document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                        ApplyHyperlinks();
+                    }
+                }
+            }
+        }
+
         public bool IsEditMode
         {
             get { return editMode; }
             set
             {
-                editMode = value;
-                NotifyOfPropertyChange(() => CanDiscard);
-                NotifyOfPropertyChange(() => IsEditMode);
-                NotifyOfPropertyChange(() => IsNotEditMode);
+                if (editMode != value)
+                {
+                    editMode = value;
+                    NotifyOfPropertyChange(() => CanDiscard);
+                    NotifyOfPropertyChange(() => IsEditMode);
+                    NotifyOfPropertyChange(() => IsNotEditMode);
+
+                    if (document != null)
+                    {
+                        if (value)
+                        {
+                            // Remove links so we don't save them
+                            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                        }
+                        else
+                        {
+                            ApplyHyperlinks();
+                        }
+                    }
+                }
             }
         }
 
@@ -56,19 +95,6 @@ namespace RPGM.Notes.ViewModels
 
         public Guid? Parameter { get; set; }
 
-        public string RtfContent
-        {
-            get { return note != null ? note.RtfContent : null; }
-            set
-            {
-                if (note != null)
-                {
-                    note.RtfContent = value;
-                    NotifyOfPropertyChange(() => RtfContent);
-                }
-            }
-        }
-
         public TextFormatViewModel TextFormat
         {
             get { return textFormat; }
@@ -83,10 +109,39 @@ namespace RPGM.Notes.ViewModels
                 {
                     note.Title = value;
                     NotifyOfPropertyChange(() => CanSave);
-                    NotifyOfPropertyChange(() => RtfContent);
                     NotifyOfPropertyChange(() => Title);
                 }
             }
+        }
+
+        private async Task ApplyHyperlinks()
+        {
+            // TODO: Use an alias table
+            var notes = (await Database.ListAsync()).Except(new[] { note }).ToArray();
+
+            // Avoid performance implications of many small updates
+            document.BatchDisplayUpdates();
+
+            ITextRange range;
+            foreach (var n in notes)
+            {
+                var link = string.Format("\"richtea.rpgm://notes/{0}\"", n.Id);
+                var skip = 0;
+
+                while ((range = document.GetRange(skip, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.Word) != 0)
+                {
+                    // NOTE: Set the document selection as workaround to prevent intermittent AccessViolationException,
+                    //       probably caused by a timing issue in the lower level code
+                    using (document.SuppressSelection())
+                    {
+                        range.CharacterFormat.ForegroundColor = AccentColor;
+                        range.Link = link;
+                        skip = range.EndPosition;
+                    }
+                }
+            }
+
+            document.ApplyDisplayUpdates();
         }
 
         public override async void CanClose(Action<bool> callback)
@@ -119,7 +174,7 @@ namespace RPGM.Notes.ViewModels
         {
             // Restore note to original as it likely has changes
             note = new Note(original);
-            NotifyOfPropertyChange(() => RtfContent);
+            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
             NotifyOfPropertyChange(() => Title);
             IsEditMode = false;
         }
@@ -149,15 +204,46 @@ namespace RPGM.Notes.ViewModels
             // Copy so we can revert changes without database hit
             note = new Note(original);
 
+            if (document != null && !string.IsNullOrEmpty(note.RtfContent))
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                await ApplyHyperlinks();
+            }
+
             NotifyOfPropertyChange(() => CanSave);
-            NotifyOfPropertyChange(() => RtfContent);
             NotifyOfPropertyChange(() => Title);
+        }
+
+        public void Navigate(Uri uri)
+        {
+            var parts = uri.AbsoluteUri.ToLower().Replace("richtea.rpgm://", string.Empty).Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var parameter = parts.Length > 1 ? parts[1] : null;
+
+            if (parts[0] == "notes")
+            {
+                Navigation.NavigateToViewModel<NoteViewModel>(Guid.Parse(parameter));
+            }
+            else
+            {
+                // TODO: Throw?
+            }
         }
 
         public async void Save()
         {
+            if (document != null)
+            {
+                string rtfContent;
+                document.GetText(TextGetOptions.FormatRtf, out rtfContent);
+                note.RtfContent = rtfContent;
+            }
+
             await Database.SaveAsync(note);
             IsEditMode = false;
+
+            // Update the stored original for reverting changes
+            // NOTE: This is messy
+            original = new Note(note);
 
             NotifyOfPropertyChange(() => CanDelete);
             NotifyOfPropertyChange(() => IsNew);

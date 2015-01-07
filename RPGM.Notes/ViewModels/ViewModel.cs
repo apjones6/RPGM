@@ -1,6 +1,8 @@
 ﻿using System;
 using Caliburn.Micro;
 using RPGM.Notes.Models;
+using Windows.UI;
+using Windows.UI.Xaml;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -20,6 +22,11 @@ namespace RPGM.Notes.ViewModels
 
             this.navigation = navigation;
             this.database = database;
+        }
+
+        protected static Color AccentColor
+        {
+            get { return (Color)Application.Current.Resources["SystemColorHighlightColor"]; }
         }
 
         protected IDatabase Database

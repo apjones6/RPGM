@@ -89,10 +89,11 @@
     </Compile>
     <Compile Include="Controls\Flyout.cs" />
     <Compile Include="Controls\OcclusionPlaceholder.cs" />
-    <Compile Include="Controls\RichEditBox.cs" />
+    <Compile Include="Controls\RichEditBoxLinker.cs" />
     <Compile Include="Converters\BooleanToSelectionModeConverter.cs" />
     <Compile Include="Converters\ObjectPropertyConverter.cs" />
     <Compile Include="Converters\TimeAgoConverter.cs" />
+    <Compile Include="Extensions\ITextDocumentExtensions.cs" />
     <Compile Include="Models\Database.cs" />
     <Compile Include="Models\Note.cs" />
     <Compile Include="Views\MainView.xaml.cs">
