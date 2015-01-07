@@ -1,4 +1,5 @@
 using System;
+using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using GalaSoft.MvvmLight.Views;
 using Microsoft.Practices.ServiceLocation;
@@ -7,7 +8,7 @@ using RPGM.Notes.ViewModels;
 
 namespace RPGM.Notes
 {
-    public class Injector : IDisposable
+    public class Injector : ICleanup
     {
         public Injector()
         {
@@ -26,10 +27,11 @@ namespace RPGM.Notes
 
         public NoteViewModel Note
         {
-            get { return ServiceLocator.Current.GetInstance<NoteViewModel>(); }
+            // NOTE: Memory leak; if this is the solution we should use a DI which allows transient instances
+            get { return ServiceLocator.Current.GetInstance<NoteViewModel>(Guid.NewGuid().ToString()); }
         }
-        
-        public void Dispose()
+
+        public void Cleanup()
         {
             SimpleIoc.Default.Reset();
         }

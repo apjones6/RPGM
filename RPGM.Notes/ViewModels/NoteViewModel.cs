@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Views;
 using RPGM.Notes.Messages;
 using RPGM.Notes.Models;
+using Windows.UI.Text;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -13,9 +15,11 @@ namespace RPGM.Notes.ViewModels
         private readonly ICommand delete;
         private readonly RelayCommand discard;
         private readonly ICommand edit;
+        private readonly ICommand navigate;
         private readonly RelayCommand save;
         private readonly TextFormatViewModel textFormat;
 
+        private ITextDocument document;
         private bool editMode;
         private Note note;
         private Note original;
@@ -28,6 +32,7 @@ namespace RPGM.Notes.ViewModels
             delete = new RelayCommand(OnDelete, () => !IsNew);
             discard = new RelayCommand(OnDiscard, () => IsEditMode);
             edit = new RelayCommand(() => IsEditMode = true);
+            navigate = new RelayCommand<Uri>(OnNavigate);
             save = new RelayCommand(OnSave, CanSave);
             textFormat = new TextFormatViewModel();
 
@@ -47,9 +52,28 @@ namespace RPGM.Notes.ViewModels
             get { return discard; }
         }
 
+        public object Document
+        {
+            set
+            {
+                if (document == null)
+                {
+                    Set<ITextDocument>(ref document, (ITextDocument)value, "Document");
+
+                    // This does nothing if note is null
+                    TryInitializeDocument();
+                }
+            }
+        }
+
         public ICommand EditCommand
         {
             get { return edit; }
+        }
+
+        public ICommand NavigateCommand
+        {
+            get { return navigate; }
         }
 
         public ICommand SaveCommand
@@ -64,9 +88,18 @@ namespace RPGM.Notes.ViewModels
             {
                 if (editMode != value)
                 {
-                    editMode = value;
-                    RaisePropertyChanged("IsEditMode");
+                    Set<bool>(ref editMode, value, "IsEditMode");
                     discard.RaiseCanExecuteChanged();
+
+                    if (value)
+                    {
+                        // Remove links so we don't save them
+                        document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                    }
+                    else
+                    {
+                        ApplyHyperlinks();
+                    }
                 }
             }
         }
@@ -74,19 +107,6 @@ namespace RPGM.Notes.ViewModels
         public bool IsNew
         {
             get { return note != null && note.Id == Guid.Empty; }
-        }
-
-        public string RtfContent
-        {
-            get { return note != null ? note.RtfContent : null; }
-            set
-            {
-                if (note != null)
-                {
-                    note.RtfContent = value;
-                    RaisePropertyChanged("RtfContent");
-                }
-            }
         }
 
         public object TextFormat
@@ -108,6 +128,36 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
+        public void ApplyHyperlinks()
+        {
+            // TODO: Use an alias table
+            var notes = Database.ListAsync().Result.Except(new[] { note }).ToArray();
+
+            // Avoid performance implications of many small updates
+            document.BatchDisplayUpdates();
+
+            ITextRange range;
+            foreach (var n in notes)
+            {
+                var link = string.Format("\"richtea.rpgm://notes/{0}\"", n.Id);
+                var skip = 0;
+
+                while ((range = document.GetRange(skip, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.Word) != 0)
+                {
+                    // NOTE: Set the document selection as workaround to prevent intermittent AccessViolationException,
+                    //       probably caused by a timing issue in the lower level code
+                    using (new SuppressSelection(document))
+                    {
+                        range.CharacterFormat.ForegroundColor = AccentColor;
+                        range.Link = link;
+                        skip = range.EndPosition;
+                    }
+                }
+            }
+
+            document.ApplyDisplayUpdates();
+        }
+
         private bool CanSave()
         {
             return note != null && !string.IsNullOrWhiteSpace(note.Title);
@@ -127,8 +177,10 @@ namespace RPGM.Notes.ViewModels
             // Copy so we can revert changes without database hit
             note = new Note(original);
 
+            // This does nothing if document is null
+            TryInitializeDocument();
+
             save.RaiseCanExecuteChanged();
-            RaisePropertyChanged("RtfContent");
             RaisePropertyChanged("Title");
         }
 
@@ -136,6 +188,10 @@ namespace RPGM.Notes.ViewModels
         {
             if (IsEditMode)
             {
+                string rtfContent;
+                document.GetText(TextGetOptions.FormatRtf, out rtfContent);
+                note.RtfContent = rtfContent;
+
                 // TODO: Investigate if this method can be async safely
                 Task.Run(() => Database.SaveAsync(note)).Wait();
                 message.Handled = true;
@@ -155,14 +211,40 @@ namespace RPGM.Notes.ViewModels
         {
             // Restore note to original as it likely has changes
             note = new Note(original);
-            RaisePropertyChanged("RtfContent");
+            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
             RaisePropertyChanged("Title");
             IsEditMode = false;
         }
 
+        private void OnNavigate(Uri uri)
+        {
+            var parts = uri.AbsoluteUri.ToLower().Replace("richtea.rpgm://", string.Empty).Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var parameter = parts.Length > 1 ? parts[1] : null;
+
+            if (parts[0] == "notes")
+            {
+                Navigation.NavigateTo("Note", Guid.Parse(parameter));
+            }
+            else
+            {
+                // TODO: Throw?
+            }
+        }
+
         private async void OnSave()
         {
+            if (document != null)
+            {
+                string rtfContent;
+                document.GetText(TextGetOptions.FormatRtf, out rtfContent);
+                note.RtfContent = rtfContent;
+            }
+
             await Database.SaveAsync(note);
+
+            // Update the stored original for reverting changes
+            // NOTE: This is messy
+            original = new Note(note);
 
             if (!IsEditMode)
             {
@@ -171,6 +253,39 @@ namespace RPGM.Notes.ViewModels
             }
             
             IsEditMode = false;
+        }
+
+        private void TryInitializeDocument()
+        {
+            // When initialize complete
+            if (document != null && note != null && !string.IsNullOrEmpty(note.RtfContent))
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                ApplyHyperlinks();
+            }
+        }
+
+        private class SuppressSelection : IDisposable
+        {
+            private readonly ITextDocument document;
+            private readonly int start;
+            private readonly int end;
+
+            public SuppressSelection(ITextDocument document)
+            {
+                if (document == null) throw new ArgumentNullException("document");
+
+                this.document = document;
+                this.start = document.Selection.StartPosition;
+                this.end = document.Selection.EndPosition;
+
+                document.Selection.SetRange(0, 0);
+            }
+
+            public void Dispose()
+            {
+                document.Selection.SetRange(start, end);
+            }
         }
     }
 }

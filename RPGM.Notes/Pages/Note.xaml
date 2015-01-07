@@ -14,7 +14,7 @@
     Transitions="{StaticResource ContinuumTransition}">
 
     <Page.Resources>
-        <Style x:Key="RichEditBoxStyle" TargetType="c:RichEditBox">
+        <Style x:Key="RichEditBoxStyle" TargetType="RichEditBox">
             <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}"/>
             <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}"/>
             <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}"/>
@@ -35,7 +35,7 @@
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="c:RichEditBox">
+                    <ControlTemplate TargetType="RichEditBox">
                         <Grid Background="Transparent">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -139,26 +139,40 @@
                     Style="{StaticResource HeaderTextBlockStyle}"
                     Text="{Binding Title}"
                     />
-                <c:RichEditBox
-                    x:Name="RtfContentBox"
-                    FontFamily="Segoe UI"
-                    Grid.Row="2"
-                    IsEnabled="{Binding IsEditMode}"
-                    Margin="0,0,19,0"
-                    RtfText="{Binding RtfContent, Mode=TwoWay}"
-                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                    Style="{StaticResource RichEditBoxStyle}"
-                    VerticalAlignment="Stretch">
-                    <i:Interaction.Behaviors>
-                        <core:EventTriggerBehavior EventName="SelectionChanged">
-                            <core:ChangePropertyAction
-                                PropertyName="Selection"
-                                TargetObject="{Binding TextFormat, Mode=OneWay}"
-                                Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document.Selection}"
-                                />
-                        </core:EventTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                </c:RichEditBox>
+                <Grid Grid.Row="2">
+                    <RichEditBox
+                        x:Name="RtfContentBox"
+                        FontFamily="Segoe UI"
+                        IsEnabled="{Binding IsEditMode}"
+                        Margin="0,0,19,0"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        Style="{StaticResource RichEditBoxStyle}"
+                        VerticalAlignment="Stretch">
+                        <i:Interaction.Behaviors>
+                            <core:EventTriggerBehavior EventName="Loaded">
+                                <core:ChangePropertyAction
+                                    PropertyName="Document"
+                                    TargetObject="{Binding Mode=OneWay}"
+                                    Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document}"
+                                    />
+                            </core:EventTriggerBehavior>
+                            <core:EventTriggerBehavior EventName="SelectionChanged">
+                                <core:ChangePropertyAction
+                                    PropertyName="Selection"
+                                    TargetObject="{Binding TextFormat, Mode=OneWay}"
+                                    Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document.Selection}"
+                                    />
+                            </core:EventTriggerBehavior>
+                        </i:Interaction.Behaviors>
+                    </RichEditBox>
+                    <c:RichEditBoxLinker
+                        HorizontalAlignment="Stretch"
+                        IsEnabled="{Binding IsEditMode, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}"
+                        NavigationCommand="{Binding NavigateCommand}"
+                        RichEditBox="{Binding ElementName=RtfContentBox}"
+                        VerticalAlignment="Stretch"
+                        />
+                </Grid>
             </Grid>
         </ScrollViewer>
 
