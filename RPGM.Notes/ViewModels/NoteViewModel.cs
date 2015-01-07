@@ -96,10 +96,10 @@ namespace RPGM.Notes.ViewModels
                         // Remove links so we don't save them
                         document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
                     }
-                    //else
-                    //{
-                    //    ApplyHyperlinks();
-                    //}
+                    else
+                    {
+                        ApplyHyperlinks();
+                    }
                 }
             }
         }
@@ -130,8 +130,6 @@ namespace RPGM.Notes.ViewModels
 
         public void ApplyHyperlinks()
         {
-            System.Diagnostics.Debug.WriteLine("ApplyHyperlinks()");
-
             // TODO: Use an alias table
             var notes = Database.ListAsync().Result.Except(new[] { note }).ToArray();
 
@@ -144,13 +142,14 @@ namespace RPGM.Notes.ViewModels
                 var link = string.Format("\"richtea.rpgm://notes/{0}\"", n.Id);
                 var skip = 0;
 
-                while ((range = document.GetRange(skip, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.None) != 0)
+                while ((range = document.GetRange(skip, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.Word) != 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("Setting text at position {0} to link: '{1}'.", range.StartPosition, link);
-
-                    // TODO: Stop this throw exceptions
+                    // NOTE: Set the document selection as workaround to prevent intermittent AccessViolationException,
+                    //       probably caused by a timing issue in the lower level code
+                    document.Selection.StartPosition = document.Selection.EndPosition = range.StartPosition;
                     range.Link = link;
                     skip = range.EndPosition;
+                    document.Selection.StartPosition = document.Selection.EndPosition = range.EndPosition;
                 }
             }
 
@@ -211,7 +210,6 @@ namespace RPGM.Notes.ViewModels
             // Restore note to original as it likely has changes
             note = new Note(original);
             document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-            //TryInitializeDocument();
             RaisePropertyChanged("Title");
             IsEditMode = false;
         }
@@ -238,9 +236,6 @@ namespace RPGM.Notes.ViewModels
                 string rtfContent;
                 document.GetText(TextGetOptions.FormatRtf, out rtfContent);
                 note.RtfContent = rtfContent;
-
-                System.Diagnostics.Debug.WriteLine("Saving RTF:");
-                System.Diagnostics.Debug.WriteLine(note.RtfContent);
             }
 
             await Database.SaveAsync(note);
