@@ -136,7 +136,10 @@ namespace RPGM.Notes.ViewModels
 
         public void View(Note note)
         {
-            Navigation.NavigateToViewModel<NoteViewModel>(note.Id);
+            Navigation
+                .UriFor<NoteViewModel>()
+                .WithParam(x => x.Id, note.Id)
+                .Navigate();
         }
     }
 }

@@ -24,6 +24,8 @@ namespace RPGM.Notes
 
             // Register UI values
             MessageBinder.SpecialValues.Add("$navigateuri", c => ((NavigationEventArgs)c.EventArgs).Uri);
+            MessageBinder.CustomConverters.Add(typeof(Guid?), (v, c) => v != null ? (Guid?)Guid.Parse(v.ToString()) : null);
+            MessageBinder.CustomConverters.Add(typeof(Guid), (v, c) => Guid.Parse(v.ToString()));
 
             // Register components
             container.RegisterWinRTServices();

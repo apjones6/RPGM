@@ -17,6 +17,7 @@ namespace RPGM.Notes.ViewModels
 
         private ITextDocument document;
         private bool editMode;
+        private Guid? id;
         private Note note;
         private Note original;
 
@@ -32,7 +33,7 @@ namespace RPGM.Notes.ViewModels
 
         public bool CanDiscard
         {
-            get { return IsEditMode; }
+            get { return IsEditMode && !IsNew; }
         }
 
         public bool CanSave
@@ -56,6 +57,16 @@ namespace RPGM.Notes.ViewModels
                         ApplyHyperlinks();
                     }
                 }
+            }
+        }
+
+        public Guid? Id
+        {
+            get { return id; }
+            set
+            {
+                id = value;
+                NotifyOfPropertyChange(() => Id);
             }
         }
 
@@ -96,8 +107,6 @@ namespace RPGM.Notes.ViewModels
         {
             get { return !editMode; }
         }
-
-        public Guid? Parameter { get; set; }
 
         public TextFormatViewModel TextFormat
         {
@@ -195,7 +204,10 @@ namespace RPGM.Notes.ViewModels
 
             if (parts[0] == "notes")
             {
-                Navigation.NavigateToViewModel<NoteViewModel>(Guid.Parse(parameter));
+                Navigation
+                    .UriFor<NoteViewModel>()
+                    .WithParam(x => x.Id, Guid.Parse(parameter))
+                    .Navigate();
             }
             else
             {
@@ -215,12 +227,11 @@ namespace RPGM.Notes.ViewModels
 
         protected override async void OnInitialize()
         {
-            // NOTE: Caliburn navigation by URI parameters does not support Guid
-            if (Parameter != null)
+            if (Id != null)
             {
                 // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
                 //       thinks we've initialized once we unblock the UI thread
-                original = await Database.GetAsync(Parameter.Value);
+                original = await Database.GetAsync(Id.Value);
             }
             else
             {
@@ -253,6 +264,7 @@ namespace RPGM.Notes.ViewModels
             }
 
             await Database.SaveAsync(note);
+            Id = note.Id;
             IsEditMode = false;
 
             // Update the stored original for reverting changes
