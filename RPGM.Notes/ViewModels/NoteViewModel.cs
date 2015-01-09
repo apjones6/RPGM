@@ -3,12 +3,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using RPGM.Notes.Models;
+using Windows.UI;
 using Windows.UI.Text;
+using Windows.UI.ViewManagement;
 
 namespace RPGM.Notes.ViewModels
 {
     public class NoteViewModel : ViewModel
     {
+        private static readonly Color COLOR_BLACK = Color.FromArgb(0, 0, 0, 0);
+
         private readonly TextFormatViewModel textFormat = new TextFormatViewModel();
 
         private ITextDocument document;
@@ -184,6 +188,31 @@ namespace RPGM.Notes.ViewModels
             IsEditMode = true;
         }
 
+        public void Navigate(Uri uri)
+        {
+            var parts = uri.AbsoluteUri.ToLower().Replace("richtea.rpgm://", string.Empty).Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var parameter = parts.Length > 1 ? parts[1] : null;
+
+            if (parts[0] == "notes")
+            {
+                Navigation.NavigateToViewModel<NoteViewModel>(Guid.Parse(parameter));
+            }
+            else
+            {
+                // TODO: Throw?
+            }
+        }
+
+        protected override void OnActivate()
+        {
+            StatusBar.GetForCurrentView().ForegroundColor = COLOR_BLACK;
+        }
+
+        protected override void OnDeactivate(bool close)
+        {
+            StatusBar.GetForCurrentView().ForegroundColor = null;
+        }
+
         protected override async void OnInitialize()
         {
             // NOTE: Caliburn navigation by URI parameters does not support Guid
@@ -212,21 +241,6 @@ namespace RPGM.Notes.ViewModels
 
             NotifyOfPropertyChange(() => CanSave);
             NotifyOfPropertyChange(() => Title);
-        }
-
-        public void Navigate(Uri uri)
-        {
-            var parts = uri.AbsoluteUri.ToLower().Replace("richtea.rpgm://", string.Empty).Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            var parameter = parts.Length > 1 ? parts[1] : null;
-
-            if (parts[0] == "notes")
-            {
-                Navigation.NavigateToViewModel<NoteViewModel>(Guid.Parse(parameter));
-            }
-            else
-            {
-                // TODO: Throw?
-            }
         }
 
         public async void Save()

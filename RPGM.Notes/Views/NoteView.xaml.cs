@@ -1,8 +1,5 @@
-﻿using Windows.UI;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.Views
 {
@@ -25,18 +22,6 @@ namespace RPGM.Notes.Views
             // Ideally we use Behaviors for this, but they don't work for Flyouts
             // Furthermore extending Flyout with special ActionCollections we next hit issue with the Top/Bottom bars running on separate visual trees
             BottomAppBar.Focus(FocusState.Programmatic);
-        }
-
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            // TODO: Handle with IViewAware ViewModel
-            StatusBar.GetForCurrentView().ForegroundColor = null;
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            // TODO: Handle with IViewAware ViewModel
-            StatusBar.GetForCurrentView().ForegroundColor = Color.FromArgb(0, 0, 0, 0);
         }
     }
 }
