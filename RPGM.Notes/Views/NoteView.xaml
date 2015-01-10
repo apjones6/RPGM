@@ -6,7 +6,6 @@
     xmlns:cal="using:Caliburn.Micro"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
-    xmlns:v="using:RPGM.Notes.Views"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     RequestedTheme="Light">
@@ -301,11 +300,8 @@
                     Label="format"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}">
                     <AppBarButton.Flyout>
-                        <c:Flyout
-                            Closed="OnFlyoutClosed"
-                            IsOpen="{Binding Path=TextFormat.IsOpen, Mode=TwoWay}"
-                            Placement="Full">
-                            <v:TextFormatView DataContext="{Binding TextFormat}" />
+                        <c:Flyout Closed="OnFlyoutClosed" IsOpen="{Binding Path=TextFormat.IsOpen, Mode=TwoWay}" Placement="Full">
+                            <ContentControl x:Name="TextFormat" />
                         </c:Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
