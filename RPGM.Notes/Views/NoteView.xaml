@@ -2,7 +2,6 @@
     x:Name="Page"
     x:Class="RPGM.Notes.Views.NoteView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:a="using:RPGM.Notes.Actions"
     xmlns:c="using:RPGM.Notes.Controls"
     xmlns:cal="using:Caliburn.Micro"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
@@ -302,13 +301,10 @@
                     Label="format"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}">
                     <AppBarButton.Flyout>
-                        <c:Flyout Closed="OnFlyoutClosed" Placement="Full">
-                            <c:Flyout.ClosedActions>
-                                <core:ChangePropertyAction PropertyName="IsOpen" TargetObject="{Binding TextFormat}" Value="False" />
-                            </c:Flyout.ClosedActions>
-                            <c:Flyout.OpenedActions>
-                                <core:ChangePropertyAction PropertyName="IsOpen" TargetObject="{Binding TextFormat}" Value="True" />
-                            </c:Flyout.OpenedActions>
+                        <c:Flyout
+                            Closed="OnFlyoutClosed"
+                            IsOpen="{Binding Path=TextFormat.IsOpen, Mode=TwoWay}"
+                            Placement="Full">
                             <v:TextFormatView DataContext="{Binding TextFormat}" />
                         </c:Flyout>
                     </AppBarButton.Flyout>

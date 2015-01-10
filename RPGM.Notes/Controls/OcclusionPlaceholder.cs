@@ -18,9 +18,9 @@ namespace RPGM.Notes.Controls
             InputPane.GetForCurrentView().Showing += OnOccludedRectUpdate;
         }
 
-        private void OnOccludedRectUpdate(InputPane sender, InputPaneVisibilityEventArgs args)
+        private void OnOccludedRectUpdate(InputPane sender, InputPaneVisibilityEventArgs e)
         {
-            Height = sender.OccludedRect.Height;
+            Height = e.OccludedRect.Height;
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
