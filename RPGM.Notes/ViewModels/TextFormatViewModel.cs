@@ -1,22 +1,34 @@
-﻿using Windows.UI.Text;
+﻿using System;
+using Windows.UI.Text;
 
 namespace RPGM.Notes.ViewModels
 {
     public class TextFormatViewModel : ViewModel
     {
+        private readonly ITextDocument document;
         private bool open;
-        private ITextSelection selection;
+
+        public TextFormatViewModel(ITextDocument document)
+        {
+            if (document == null) throw new ArgumentNullException("document");
+            this.document = document;
+        }
+
+        private ITextCharacterFormat CharacterFormat
+        {
+            get { return document.Selection.CharacterFormat; }
+        }
 
         public bool IsBold
         {
-            get { return selection.CharacterFormat.Bold == FormatEffect.On; }
-            set { selection.CharacterFormat.Bold = value ? FormatEffect.On : FormatEffect.Off; }
+            get { return CharacterFormat.Bold == FormatEffect.On; }
+            set { CharacterFormat.Bold = value ? FormatEffect.On : FormatEffect.Off; }
         }
 
         public bool IsItalic
         {
-            get { return selection.CharacterFormat.Italic == FormatEffect.On; }
-            set { selection.CharacterFormat.Italic = value ? FormatEffect.On : FormatEffect.Off; }
+            get { return CharacterFormat.Italic == FormatEffect.On; }
+            set { CharacterFormat.Italic = value ? FormatEffect.On : FormatEffect.Off; }
         }
 
         public bool IsNotOpen
@@ -30,25 +42,14 @@ namespace RPGM.Notes.ViewModels
             set
             {
                 open = value;
-                NotifyOfPropertyChange(() => IsNotOpen);
-                NotifyOfPropertyChange(() => IsOpen);
+                Refresh();
             }
         }
 
         public bool IsUnderline
         {
-            get { return selection.CharacterFormat.Underline != UnderlineType.None; }
-            set { selection.CharacterFormat.Underline = value ? UnderlineType.Single : UnderlineType.None; }
-        }
-
-        public object Selection
-        {
-            get { return selection; }
-            set
-            {
-                selection = (ITextSelection)value;
-                Refresh();
-            }
+            get { return CharacterFormat.Underline != UnderlineType.None; }
+            set { CharacterFormat.Underline = value ? UnderlineType.Single : UnderlineType.None; }
         }
     }
 }

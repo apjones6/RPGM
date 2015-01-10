@@ -263,13 +263,6 @@
                                 Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document}"
                                 />
                         </core:EventTriggerBehavior>
-                        <core:EventTriggerBehavior EventName="SelectionChanged">
-                            <core:ChangePropertyAction
-                                PropertyName="Selection"
-                                TargetObject="{Binding TextFormat, Mode=OneWay}"
-                                Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document.Selection}"
-                                />
-                        </core:EventTriggerBehavior>
                     </i:Interaction.Behaviors>
                 </RichEditBox>
                 <c:RichEditBoxLinker

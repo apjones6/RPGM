@@ -13,13 +13,12 @@ namespace RPGM.Notes.ViewModels
     {
         private static readonly Color COLOR_BLACK = Color.FromArgb(0, 0, 0, 0);
 
-        private readonly TextFormatViewModel textFormat = new TextFormatViewModel();
-
         private ITextDocument document;
         private bool editMode;
         private Guid? id;
         private Note note;
         private Note original;
+        private TextFormatViewModel textFormat;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
@@ -49,7 +48,10 @@ namespace RPGM.Notes.ViewModels
                 if (document == null)
                 {
                     document = (ITextDocument)value;
+                    textFormat = new TextFormatViewModel(document);
+
                     NotifyOfPropertyChange(() => Document);
+                    NotifyOfPropertyChange(() => TextFormat);
 
                     if (note != null && !string.IsNullOrEmpty(note.RtfContent))
                     {
