@@ -237,47 +237,53 @@
                     PlaceholderText="Note"
                     Style="{StaticResource HeaderTextBoxStyle}"
                     />
-                <Grid Grid.Row="2">
-                    <RichEditBox
-                        x:Name="RtfContentBox"
-                        x:Uid="TextBoxRtfContent"
-                        FontFamily="Segoe UI"
-                        IsEnabled="{Binding IsEditMode}"
-                        Margin="0,0,19,0"
-                        PlaceholderText="Type here..."
-                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        Style="{StaticResource RichEditBoxStyle}"
-                        VerticalAlignment="Stretch">
-                        <i:Interaction.Behaviors>
-                            <!-- TODO: Tidy this if we can -->
-                            <core:EventTriggerBehavior EventName="Loaded">
-                                <core:ChangePropertyAction
-                                    PropertyName="Document"
-                                    TargetObject="{Binding Mode=OneWay}"
-                                    Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document}"
-                                    />
-                            </core:EventTriggerBehavior>
-                            <core:EventTriggerBehavior EventName="SelectionChanged">
-                                <core:ChangePropertyAction
-                                    PropertyName="Selection"
-                                    TargetObject="{Binding TextFormat, Mode=OneWay}"
-                                    Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document.Selection}"
-                                    />
-                            </core:EventTriggerBehavior>
-                        </i:Interaction.Behaviors>
-                    </RichEditBox>
-                    <c:RichEditBoxLinker
-                        cal:Message.Attach="[Event Navigate] = [Action Navigate($navigateuri)]"
-                        IsEnabled="{Binding IsNotEditMode}"
-                        RichEditBox="{Binding ElementName=RtfContentBox}"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        />
-                </Grid>
+                <Canvas
+                    Grid.Row="2"
+                    Background="Transparent"
+                    Margin="-19,0,0,0"
+                    Tapped="OnCanvasTapped"
+                    />
+                <RichEditBox
+                    x:Name="RtfContentBox"
+                    x:Uid="TextBoxRtfContent"
+                    Grid.Row="2"
+                    FontFamily="Segoe UI"
+                    IsEnabled="{Binding IsEditMode}"
+                    Margin="0,0,19,0"
+                    PlaceholderText="Type here..."
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    Style="{StaticResource RichEditBoxStyle}"
+                    TextWrapping="Wrap">
+                    <i:Interaction.Behaviors>
+                        <!-- TODO: Tidy this if we can -->
+                        <core:EventTriggerBehavior EventName="Loaded">
+                            <core:ChangePropertyAction
+                                PropertyName="Document"
+                                TargetObject="{Binding Mode=OneWay}"
+                                Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document}"
+                                />
+                        </core:EventTriggerBehavior>
+                        <core:EventTriggerBehavior EventName="SelectionChanged">
+                            <core:ChangePropertyAction
+                                PropertyName="Selection"
+                                TargetObject="{Binding TextFormat, Mode=OneWay}"
+                                Value="{Binding ElementName=RtfContentBox, Converter={StaticResource ObjectPropertyConverter}, ConverterParameter=Document.Selection}"
+                                />
+                        </core:EventTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </RichEditBox>
+                <c:RichEditBoxLinker
+                    Grid.Row="2"
+                    cal:Message.Attach="[Event Navigate] = [Action Navigate($navigateuri)]"
+                    IsEnabled="{Binding IsNotEditMode}"
+                    RichEditBox="{Binding ElementName=RtfContentBox}"
+                    />
             </Grid>
         </ScrollViewer>
 
-        <c:OcclusionPlaceholder Grid.Row="1" />
+        <c:OcclusionPlaceholder
+            Grid.Row="1"
+            />
     </Grid>
 
     <Page.BottomAppBar>
@@ -302,14 +308,8 @@
                     Icon="Font"
                     Label="format"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}">
-                    <i:Interaction.Behaviors>
-                        <core:EventTriggerBehavior EventName="Click">
-                            <a:OpenFlyoutAction />
-                        </core:EventTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                    
-                    <FlyoutBase.AttachedFlyout>
-                        <c:Flyout Closed="OnFlyoutClosed" Opened="OnFlyoutOpened" Placement="Full">
+                    <AppBarButton.Flyout>
+                        <c:Flyout Closed="OnFlyoutClosed" Placement="Full">
                             <c:Flyout.ClosedActions>
                                 <core:ChangePropertyAction PropertyName="IsOpen" TargetObject="{Binding TextFormat}" Value="False" />
                             </c:Flyout.ClosedActions>
@@ -318,7 +318,7 @@
                             </c:Flyout.OpenedActions>
                             <v:TextFormatView DataContext="{Binding TextFormat}" />
                         </c:Flyout>
-                    </FlyoutBase.AttachedFlyout>
+                    </AppBarButton.Flyout>
                 </AppBarButton>
             </CommandBar.PrimaryCommands>
             <CommandBar.SecondaryCommands>
