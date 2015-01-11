@@ -6,6 +6,7 @@ using RPGM.Notes.Models;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.ViewManagement;
+using Windows.UI.Xaml.Controls;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -40,28 +41,6 @@ namespace RPGM.Notes.ViewModels
             get { return note != null && !string.IsNullOrWhiteSpace(note.Title); }
         }
 
-        public object Document
-        {
-            get { return document; }
-            set
-            {
-                if (document == null)
-                {
-                    document = (ITextDocument)value;
-                    textFormat = new TextFormatViewModel(document);
-
-                    NotifyOfPropertyChange(() => Document);
-                    NotifyOfPropertyChange(() => TextFormat);
-
-                    if (note != null && !string.IsNullOrEmpty(note.RtfContent))
-                    {
-                        document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                        ApplyHyperlinks();
-                    }
-                }
-            }
-        }
-
         public Guid? Id
         {
             get { return id; }
@@ -77,26 +56,10 @@ namespace RPGM.Notes.ViewModels
             get { return editMode; }
             set
             {
-                if (editMode != value)
-                {
-                    editMode = value;
-                    NotifyOfPropertyChange(() => CanDiscard);
-                    NotifyOfPropertyChange(() => IsEditMode);
-                    NotifyOfPropertyChange(() => IsNotEditMode);
-
-                    if (document != null)
-                    {
-                        if (value)
-                        {
-                            // Remove links so we don't save them
-                            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                        }
-                        else
-                        {
-                            ApplyHyperlinks();
-                        }
-                    }
-                }
+                editMode = value;
+                NotifyOfPropertyChange(() => CanDiscard);
+                NotifyOfPropertyChange(() => IsEditMode);
+                NotifyOfPropertyChange(() => IsNotEditMode);
             }
         }
 
@@ -129,44 +92,13 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        private async Task ApplyHyperlinks()
-        {
-            // TODO: Use an alias table
-            var notes = (await Database.ListAsync()).Except(new[] { note }).ToArray();
-
-            // Avoid performance implications of many small updates
-            document.BatchDisplayUpdates();
-
-            ITextRange range;
-            foreach (var n in notes)
-            {
-                var link = string.Format("\"richtea.rpgm://notes/{0}\"", n.Id);
-                var skip = 0;
-
-                while ((range = document.GetRange(skip, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.Word) != 0)
-                {
-                    // NOTE: Set the document selection as workaround to prevent intermittent AccessViolationException,
-                    //       probably caused by a timing issue in the lower level code
-                    using (document.SuppressSelection())
-                    {
-                        range.CharacterFormat.ForegroundColor = AccentColor;
-                        range.Link = link;
-                        skip = range.EndPosition;
-                    }
-                }
-            }
-
-            document.ApplyDisplayUpdates();
-        }
-
         public override async void CanClose(Action<bool> callback)
         {
             // NOTE: If we can't save, we're discarding, but we should probably show a message
             if (IsEditMode && !IsNew && CanSave)
             {
-                IsEditMode = false;
                 callback(false);
-                await Database.SaveAsync(note);
+                await Save();
             }
             else
             {
@@ -185,17 +117,19 @@ namespace RPGM.Notes.ViewModels
             Navigation.GoBack();
         }
 
-        public void Discard()
+        public async void Discard()
         {
             // Restore note to original as it likely has changes
             note = new Note(original);
-            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
             NotifyOfPropertyChange(() => Title);
+            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+            await SetLinks();
             IsEditMode = false;
         }
 
         public void Edit()
         {
+            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
             IsEditMode = true;
         }
 
@@ -249,14 +183,17 @@ namespace RPGM.Notes.ViewModels
             if (document != null && !string.IsNullOrEmpty(note.RtfContent))
             {
                 document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                await ApplyHyperlinks();
+                if (!IsEditMode)
+                {
+                    await SetLinks();
+                }
             }
 
             NotifyOfPropertyChange(() => CanSave);
             NotifyOfPropertyChange(() => Title);
         }
 
-        public async void Save()
+        public async Task Save()
         {
             if (document != null)
             {
@@ -267,6 +204,9 @@ namespace RPGM.Notes.ViewModels
 
             await Database.SaveAsync(note);
             Id = note.Id;
+
+            await SetLinks();
+
             IsEditMode = false;
 
             // Update the stored original for reverting changes
@@ -275,6 +215,34 @@ namespace RPGM.Notes.ViewModels
 
             NotifyOfPropertyChange(() => CanDelete);
             NotifyOfPropertyChange(() => IsNew);
+        }
+
+        public async Task SetDocument(RichEditBox richEditBox)
+        {
+            // NOTE: We'd like to take the ITextDocument directly, and deal with the control
+            //       at the message binder, but it attempts to cast the document on another
+            //       thread, which results in an InvalidCastException.
+
+            if (this.document != null) throw new InvalidOperationException("Document has already been initialized.");
+            if (richEditBox == null) throw new ArgumentNullException("richEditBox");
+
+            this.document = richEditBox.Document;
+            this.textFormat = new TextFormatViewModel(document);
+            NotifyOfPropertyChange(() => TextFormat);
+
+            if (note != null && !string.IsNullOrEmpty(note.RtfContent))
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+                await SetLinks();
+            }
+        }
+
+        private async Task SetLinks()
+        {
+            // TODO: Use an alias table
+            var notes = await Database.ListAsync();
+            var links = notes.Except(new[] { note }).ToDictionary(x => x.Title, x => string.Format("richtea.rpgm://notes/{0}", x.Id));
+            document.AutoHyperlinks(links, AccentColor);
         }
     }
 }
