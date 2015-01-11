@@ -18,8 +18,8 @@ namespace RPGM.Notes.ViewModels
         private bool editMode;
         private Guid? id;
         private Note note;
-        private Note original;
         private TextFormatViewModel textFormat;
+        private string title;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
@@ -38,7 +38,7 @@ namespace RPGM.Notes.ViewModels
 
         public bool CanSave
         {
-            get { return note != null && !string.IsNullOrWhiteSpace(note.Title); }
+            get { return !string.IsNullOrWhiteSpace(Title); }
         }
 
         public Guid? Id
@@ -58,6 +58,7 @@ namespace RPGM.Notes.ViewModels
             {
                 editMode = value;
                 NotifyOfPropertyChange(() => CanDiscard);
+                NotifyOfPropertyChange(() => CanSave);
                 NotifyOfPropertyChange(() => IsEditMode);
                 NotifyOfPropertyChange(() => IsNotEditMode);
             }
@@ -76,19 +77,21 @@ namespace RPGM.Notes.ViewModels
         public TextFormatViewModel TextFormat
         {
             get { return textFormat; }
+            set
+            {
+                textFormat = value;
+                NotifyOfPropertyChange(() => TextFormat);
+            }
         }
 
         public string Title
         {
-            get { return note != null ? note.Title : null; }
+            get { return title ?? (note != null ? note.Title : null); }
             set
             {
-                if (note != null)
-                {
-                    note.Title = value;
-                    NotifyOfPropertyChange(() => CanSave);
-                    NotifyOfPropertyChange(() => Title);
-                }
+                title = value;
+                NotifyOfPropertyChange(() => CanSave);
+                NotifyOfPropertyChange(() => Title);
             }
         }
 
@@ -119,17 +122,18 @@ namespace RPGM.Notes.ViewModels
 
         public async void Discard()
         {
-            // Restore note to original as it likely has changes
-            note = new Note(original);
-            NotifyOfPropertyChange(() => Title);
-            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-            await SetLinks();
+            await SetText();
             IsEditMode = false;
+            Title = null;
         }
 
         public void Edit()
         {
-            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+            if (!string.IsNullOrEmpty(note.RtfContent))
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+            }
+
             IsEditMode = true;
         }
 
@@ -163,38 +167,29 @@ namespace RPGM.Notes.ViewModels
 
         protected override async void OnInitialize()
         {
-            if (Id != null)
-            {
-                // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
-                //       thinks we've initialized once we unblock the UI thread
-                original = await Database.GetAsync(Id.Value);
-            }
-            else
-            {
-                original = new Note();
-
-                // Directly to edit mode for new
-                IsEditMode = true;
-            }
-
-            // Copy so we can revert changes without database hit
-            note = new Note(original);
-
-            if (document != null && !string.IsNullOrEmpty(note.RtfContent))
-            {
-                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                if (!IsEditMode)
-                {
-                    await SetLinks();
-                }
-            }
+            // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
+            //       thinks we've initialized once we unblock the UI thread
+            note = Id != null ? await Database.GetAsync(Id.Value) : new Note();
 
             NotifyOfPropertyChange(() => CanSave);
             NotifyOfPropertyChange(() => Title);
+
+            if (IsNew)
+            {
+                await SetText(true, false);
+                IsEditMode = true;
+            }
+            else
+            {
+                await SetText();
+            }
         }
 
         public async Task Save()
         {
+            // NOTE: Use property as if not changed the field may be null
+            note.Title = Title;
+
             if (document != null)
             {
                 string rtfContent;
@@ -203,15 +198,10 @@ namespace RPGM.Notes.ViewModels
             }
 
             await Database.SaveAsync(note);
-            Id = note.Id;
-
-            await SetLinks();
+            await SetText(false);
 
             IsEditMode = false;
-
-            // Update the stored original for reverting changes
-            // NOTE: This is messy
-            original = new Note(note);
+            Id = note.Id;
 
             NotifyOfPropertyChange(() => CanDelete);
             NotifyOfPropertyChange(() => IsNew);
@@ -223,26 +213,34 @@ namespace RPGM.Notes.ViewModels
             //       at the message binder, but it attempts to cast the document on another
             //       thread, which results in an InvalidCastException.
 
-            if (this.document != null) throw new InvalidOperationException("Document has already been initialized.");
+            if (document != null) throw new InvalidOperationException("Document has already been initialized.");
             if (richEditBox == null) throw new ArgumentNullException("richEditBox");
 
-            this.document = richEditBox.Document;
-            this.textFormat = new TextFormatViewModel(document);
-            NotifyOfPropertyChange(() => TextFormat);
+            document = richEditBox.Document;
+            TextFormat = new TextFormatViewModel(document);
 
-            if (note != null && !string.IsNullOrEmpty(note.RtfContent))
-            {
-                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                await SetLinks();
-            }
+            await SetText();
         }
 
-        private async Task SetLinks()
+        private async Task SetText(bool setText = true, bool setLinks = true)
         {
-            // TODO: Use an alias table
-            var notes = await Database.ListAsync();
-            var links = notes.Except(new[] { note }).ToDictionary(x => x.Title, x => string.Format("richtea.rpgm://notes/{0}", x.Id));
-            document.AutoHyperlinks(links, AccentColor);
+            if (document == null || note == null || string.IsNullOrEmpty(note.RtfContent))
+            {
+                return;
+            }
+
+            if (setText)
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+            }
+
+            if (setLinks)
+            {
+                // TODO: Use an alias table
+                var notes = await Database.ListAsync();
+                var links = notes.Except(new[] { note }).ToDictionary(x => x.Title, x => string.Format("richtea.rpgm://notes/{0}", x.Id));
+                document.AutoHyperlinks(links, AccentColor);
+            }
         }
     }
 }
