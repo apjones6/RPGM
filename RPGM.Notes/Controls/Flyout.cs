@@ -1,45 +1,31 @@
-﻿using Microsoft.Xaml.Interactivity;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 
 namespace RPGM.Notes.Controls
 {
     public class Flyout : Windows.UI.Xaml.Controls.Flyout
     {
-        public static readonly DependencyProperty ClosedActionsProperty = DependencyProperty.Register("ClosedActions", typeof(ActionCollection), typeof(Flyout), new PropertyMetadata(null));
-        public static readonly DependencyProperty OpenedActionsProperty = DependencyProperty.Register("OpenedActions", typeof(ActionCollection), typeof(Flyout), new PropertyMetadata(null));
+        public static readonly DependencyProperty IsOpenProperty = DependencyProperty.Register("IsOpen", typeof(bool), typeof(Flyout), new PropertyMetadata(false));
 
         public Flyout()
         {
-            SetValue(ClosedActionsProperty, new ActionCollection());
-            SetValue(OpenedActionsProperty, new ActionCollection());
             Closed += OnClosed;
             Opened += OnOpened;
         }
 
-        public ActionCollection ClosedActions
+        public bool IsOpen
         {
-            get { return (ActionCollection)GetValue(ClosedActionsProperty); }
-        }
-
-        public ActionCollection OpenedActions
-        {
-            get { return (ActionCollection)GetValue(OpenedActionsProperty); }
+            get { return (bool)GetValue(IsOpenProperty); }
+            set { SetValue(IsOpenProperty, value); }
         }
 
         private void OnClosed(object sender, object e)
         {
-            foreach (IAction action in ClosedActions)
-            {
-                action.Execute(sender, e);
-            }
+            IsOpen = false;
         }
 
         private void OnOpened(object sender, object e)
         {
-            foreach (IAction action in OpenedActions)
-            {
-                action.Execute(sender, e);
-            }
+            IsOpen = true;
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System;
-using GalaSoft.MvvmLight;
+using Caliburn.Micro;
 using SQLite.Net.Attributes;
 
 namespace RPGM.Notes.Models
 {
-    public class Note : ObservableObject
+    public class Note : PropertyChangedBase
     {
         private DateTimeOffset dateCreated;
         private DateTimeOffset dateModified;
@@ -30,13 +30,21 @@ namespace RPGM.Notes.Models
         public DateTimeOffset DateCreated
         {
             get { return dateCreated; }
-            set { Set<DateTimeOffset>(ref dateCreated, value, "DateCreated"); }
+            set
+            {
+                dateCreated = value;
+                NotifyOfPropertyChange(() => DateCreated);
+            }
         }
 
         public DateTimeOffset DateModified
         {
             get { return dateModified; }
-            set { Set<DateTimeOffset>(ref dateModified, value, "DateModified"); }
+            set
+            {
+                dateModified = value;
+                NotifyOfPropertyChange(() => DateModified);
+            }
         }
 
         [AutoIncrement]
@@ -44,19 +52,31 @@ namespace RPGM.Notes.Models
         public Guid Id
         {
             get { return id; }
-            set { Set<Guid>(ref id, value, "Id"); }
+            set
+            {
+                id = value;
+                NotifyOfPropertyChange(() => Id);
+            }
         }
 
         public string RtfContent
         {
             get { return rtfContent; }
-            set { Set<string>(ref rtfContent, value, "RtfContent"); }
+            set
+            {
+                rtfContent = value;
+                NotifyOfPropertyChange(() => RtfContent);
+            }
         }
 
         public string Title
         {
             get { return title; }
-            set { Set<string>(ref title, value, "Title"); }
+            set
+            {
+                title = value;
+                NotifyOfPropertyChange(() => Title);
+            }
         }
 
         public override bool Equals(object obj)

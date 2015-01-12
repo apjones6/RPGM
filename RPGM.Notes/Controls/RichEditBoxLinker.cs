@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Input;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Text;
@@ -13,7 +12,6 @@ namespace RPGM.Notes.Controls
     public class RichEditBoxLinker : Canvas
     {
         public static readonly DependencyProperty IsEnabledProperty = DependencyProperty.Register("IsEnabled", typeof(bool), typeof(RichEditBoxLinker), new PropertyMetadata(true, IsEnabledCallback));
-        public static readonly DependencyProperty NavigationCommandProperty = DependencyProperty.Register("NavigationCommand", typeof(ICommand), typeof(RichEditBoxLinker), new PropertyMetadata(null));
         public static readonly DependencyProperty RichEditBoxProperty = DependencyProperty.Register("RichEditBox", typeof(RichEditBox), typeof(RichEditBoxLinker), new PropertyMetadata(null));
 
         public RichEditBoxLinker()
@@ -28,17 +26,13 @@ namespace RPGM.Notes.Controls
             set { SetValue(IsEnabledProperty, value); }
         }
 
-        public ICommand NavigationCommand
-        {
-            get { return (ICommand)GetValue(NavigationCommandProperty); }
-            set { SetValue(NavigationCommandProperty, value); }
-        }
-
         public RichEditBox RichEditBox
         {
             get { return (RichEditBox)GetValue(RichEditBoxProperty); }
             set { SetValue(RichEditBoxProperty, value); }
         }
+
+        public event EventHandler<NavigationEventArgs> Navigate;
 
         private static void IsEnabledCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -58,10 +52,10 @@ namespace RPGM.Notes.Controls
                 // TODO: Robustness
                 var uri = new Uri(range.Link.Substring(1, range.Link.Length - 2));
                 
-                // Use command if able, else launch normally
-                if (NavigationCommand != null && NavigationCommand.CanExecute(uri))
+                // Dispatch event if any listeners, else launch normally
+                if (Navigate != null)
                 {
-                    NavigationCommand.Execute(uri);
+                    Navigate(this, new NavigationEventArgs(uri));
                 }
                 else
                 {
@@ -75,6 +69,22 @@ namespace RPGM.Notes.Controls
             linker.Background = isEnabled ? new SolidColorBrush(new Color { A = 0x00 }) : null;
             linker.IsHitTestVisible = isEnabled;
             linker.IsTapEnabled = isEnabled;
+        }
+    }
+
+    public class NavigationEventArgs : EventArgs
+    {
+        private readonly Uri uri;
+
+        public NavigationEventArgs(Uri uri)
+        {
+            if (uri == null) throw new ArgumentNullException("uri");
+            this.uri = uri;
+        }
+
+        public Uri Uri
+        {
+            get { return uri; }
         }
     }
 }

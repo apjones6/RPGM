@@ -1,23 +1,18 @@
 ﻿<Page
-    x:Class="RPGM.Notes.Pages.Main"
-    x:Name="Page"
+    x:Class="RPGM.Notes.Views.MainView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:a="using:RPGM.Notes.Actions"
+    xmlns:cal="using:Caliburn.Micro"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    DataContext="{Binding Notes, Source={StaticResource Injector}}"
-    RequestedTheme="Default"
-    Transitions="{StaticResource ContinuumTransition}">
+    RequestedTheme="Default">
     
     <Page.Resources>
         <DataTemplate x:Key="ItemTemplate">
-            <StackPanel>
+            <StackPanel cal:Message.Attach="[Event Tapped] = [Action View($datacontext)]">
                 <i:Interaction.Behaviors>
-                    <core:EventTriggerBehavior EventName="Tapped">
-                        <core:NavigateToPageAction TargetPage="RPGM.Notes.Pages.Note" Parameter="{Binding Id}" />
-                    </core:EventTriggerBehavior>
                     <!-- RightTapped is recommended, but it doesn't occur until user releases -->
                     <core:EventTriggerBehavior EventName="Holding">
                         <a:OpenFlyoutAction />
@@ -26,17 +21,11 @@
 
                 <FlyoutBase.AttachedFlyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem x:Uid="RenameButton" Text="rename">
-                            <i:Interaction.Behaviors>
-                                <core:EventTriggerBehavior EventName="Click">
-                                    <core:NavigateToPageAction TargetPage="RPGM.Notes.Pages.Rename" Parameter="{Binding Id}" />
-                                </core:EventTriggerBehavior>
-                            </i:Interaction.Behaviors>
-                        </MenuFlyoutItem>
+                        <!-- We must break out of the flyout visual tree -->
                         <MenuFlyoutItem
                             x:Uid="DeleteButton"
-                            Command="{Binding Path=DataContext.DeleteCommand, ElementName=Page}"
-                            CommandParameter="{Binding Id}"
+                            cal:Action.TargetWithoutContext="{Binding DataContext, ElementName=NotesListView}"
+                            cal:Message.Attach="Delete($datacontext)"
                             Text="delete"
                             />
                     </MenuFlyout>
@@ -52,7 +41,6 @@
                     />
             </StackPanel>
         </DataTemplate>
-
         <Style x:Key="ItemContainerStyle" TargetType="ListViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Transitions">
@@ -64,8 +52,14 @@
             </Setter>
         </Style>
     </Page.Resources>
-
-    <Grid ChildrenTransitions="{StaticResource EntranceTransition}" Margin="19,0,0,0">
+    
+    <Grid Margin="19,0,0,0">
+        <Grid.ChildrenTransitions>
+            <TransitionCollection>
+                <EntranceThemeTransition />
+            </TransitionCollection>
+        </Grid.ChildrenTransitions>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -93,8 +87,9 @@
             ItemContainerStyle="{StaticResource ItemContainerStyle}"
             ItemsSource="{Binding Notes}"
             ItemTemplate="{StaticResource ItemTemplate}"
-            SelectionMode="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}}">
+            SelectionMode="{Binding IsSelectMode, Converter={StaticResource BoolToSelectionMode}}">
             <i:Interaction.Behaviors>
+                <!-- TODO: Tidy this if we can -->
                 <core:EventTriggerBehavior EventName="SelectionChanged">
                     <core:ChangePropertyAction
                         PropertyName="SelectedItems"
@@ -110,32 +105,28 @@
         <CommandBar>
             <CommandBar.PrimaryCommands>
                 <AppBarButton
-                    x:Uid="AppBarAdd"
+                    x:Name="New"
+                    x:Uid="AppBarNew"
                     Icon="Add"
-                    Label="add"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}">
-                    <i:Interaction.Behaviors>
-                        <core:EventTriggerBehavior EventName="Click">
-                            <core:NavigateToPageAction TargetPage="RPGM.Notes.Pages.Rename" />
-                        </core:EventTriggerBehavior>
-                    </i:Interaction.Behaviors>
-                </AppBarButton>
+                    Label="new"
+                    Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}"
+                    />
                 <AppBarButton
+                    x:Name="Select"
                     x:Uid="AppBarSelect"
-                    Command="{Binding SelectCommand}"
                     Label="select"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}, ConverterParameter=Invert}">
+                    Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}">
                     <AppBarButton.Icon>
                         <!-- Same glyph as for Icon="Bullets", but that doesn't work in WP8.1 at present -->
                         <FontIcon FontFamily="Segoe UI Symbol" Glyph="&#xE133;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <AppBarButton
+                    x:Name="DeleteSelected"
                     x:Uid="AppBarDelete"
-                    Command="{Binding DeleteSelectionCommand}"
                     Icon="Delete"
                     Label="delete"
-                    Visibility="{Binding IsSelectable, Converter={StaticResource BooleanToUIConverter}}"
+                    Visibility="{Binding IsSelectMode, Converter={StaticResource BoolToVisibility}}"
                     />
             </CommandBar.PrimaryCommands>
         </CommandBar>

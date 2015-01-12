@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
     <UserControl.Resources>
-        <Style x:Key="ToggleButton" TargetType="ToggleButton">
+        <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
             <Setter Property="Margin" Value="0,0,14,0" />
             <Setter Property="MinHeight" Value="70" />
             <Setter Property="MinWidth" Value="70" />
@@ -18,13 +18,13 @@
             Text="format"
             />
         <GridView>
-            <ToggleButton IsChecked="{Binding IsBold, Mode=TwoWay}" Style="{StaticResource ToggleButton}">
+            <ToggleButton IsChecked="{Binding IsBold, Mode=TwoWay}" Style="{StaticResource ToggleButtonStyle}">
                 <SymbolIcon Symbol="Bold" />
             </ToggleButton>
-            <ToggleButton IsChecked="{Binding IsItalic, Mode=TwoWay}" Style="{StaticResource ToggleButton}">
+            <ToggleButton IsChecked="{Binding IsItalic, Mode=TwoWay}" Style="{StaticResource ToggleButtonStyle}">
                 <SymbolIcon Symbol="Italic" />
             </ToggleButton>
-            <ToggleButton IsChecked="{Binding IsUnderline, Mode=TwoWay}" Style="{StaticResource ToggleButton}">
+            <ToggleButton IsChecked="{Binding IsUnderline, Mode=TwoWay}" Style="{StaticResource ToggleButtonStyle}">
                 <SymbolIcon Symbol="Underline" />
             </ToggleButton>
         </GridView>

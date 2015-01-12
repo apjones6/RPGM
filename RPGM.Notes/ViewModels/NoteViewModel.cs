@@ -1,84 +1,56 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Views;
-using RPGM.Notes.Messages;
+using Caliburn.Micro;
 using RPGM.Notes.Models;
+using Windows.UI;
 using Windows.UI.Text;
+using Windows.UI.ViewManagement;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.ViewModels
 {
     public class NoteViewModel : ViewModel
     {
-        private readonly ICommand delete;
-        private readonly RelayCommand discard;
-        private readonly ICommand edit;
-        private readonly ICommand navigate;
-        private readonly RelayCommand save;
-        private readonly TextFormatViewModel textFormat;
+        private static readonly Color COLOR_BLACK = Color.FromArgb(0, 0, 0, 0);
 
         private ITextDocument document;
         private bool editMode;
         private Note note;
-        private Note original;
+        private TextFormatViewModel textFormat;
+        private string title;
 
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
         {
-            Messenger.Register<BackMessage>(this, OnBackMessage);
-
-            delete = new RelayCommand(OnDelete, () => !IsNew);
-            discard = new RelayCommand(OnDiscard, () => IsEditMode);
-            edit = new RelayCommand(() => IsEditMode = true);
-            navigate = new RelayCommand<Uri>(OnNavigate);
-            save = new RelayCommand(OnSave, CanSave);
-            textFormat = new TextFormatViewModel();
-
-            if (IsInDesignMode)
-            {
-                note = new Note { RtfContent = @"{\rtf1\ansi This is RTF content...}", Title = "Story ideas" };
-            }
         }
 
-        public ICommand DeleteCommand
+        public Guid? BackId
         {
-            get { return delete; }
+            get;
+            set;
         }
 
-        public ICommand DiscardCommand
+        public bool CanDelete
         {
-            get { return discard; }
+            get { return !IsNew; }
         }
 
-        public object Document
+        public bool CanDiscard
         {
-            set
-            {
-                if (document == null)
-                {
-                    Set<ITextDocument>(ref document, (ITextDocument)value, "Document");
-
-                    // This does nothing if note is null
-                    TryInitializeDocument();
-                }
-            }
+            get { return IsEditMode && !IsNew; }
         }
 
-        public ICommand EditCommand
+        public bool CanSave
         {
-            get { return edit; }
+            get { return !string.IsNullOrWhiteSpace(Title); }
         }
 
-        public ICommand NavigateCommand
+        public Guid? Id
         {
-            get { return navigate; }
-        }
-
-        public ICommand SaveCommand
-        {
-            get { return save; }
+            get;
+            set;
         }
 
         public bool IsEditMode
@@ -86,21 +58,11 @@ namespace RPGM.Notes.ViewModels
             get { return editMode; }
             set
             {
-                if (editMode != value)
-                {
-                    Set<bool>(ref editMode, value, "IsEditMode");
-                    discard.RaiseCanExecuteChanged();
-
-                    if (value)
-                    {
-                        // Remove links so we don't save them
-                        document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                    }
-                    else
-                    {
-                        ApplyHyperlinks();
-                    }
-                }
+                editMode = value;
+                NotifyOfPropertyChange(() => CanDiscard);
+                NotifyOfPropertyChange(() => CanSave);
+                NotifyOfPropertyChange(() => IsEditMode);
+                NotifyOfPropertyChange(() => IsNotEditMode);
             }
         }
 
@@ -109,121 +71,86 @@ namespace RPGM.Notes.ViewModels
             get { return note != null && note.Id == Guid.Empty; }
         }
 
-        public object TextFormat
+        public bool IsNotEditMode
+        {
+            get { return !editMode; }
+        }
+
+        public TextFormatViewModel TextFormat
         {
             get { return textFormat; }
+            set
+            {
+                textFormat = value;
+                NotifyOfPropertyChange(() => TextFormat);
+            }
         }
 
         public string Title
         {
-            get { return note != null ? note.Title : null; }
+            get { return title ?? (note != null ? note.Title : null); }
             set
             {
-                if (note != null)
-                {
-                    note.Title = value;
-                    RaisePropertyChanged("Title");
-                    save.RaiseCanExecuteChanged();
-                }
+                title = value;
+                NotifyOfPropertyChange(() => CanSave);
+                NotifyOfPropertyChange(() => Title);
             }
         }
 
-        public void ApplyHyperlinks()
+        public override async void CanClose(Action<bool> callback)
         {
-            // TODO: Use an alias table
-            var notes = Database.ListAsync().Result.Except(new[] { note }).ToArray();
-
-            // Avoid performance implications of many small updates
-            document.BatchDisplayUpdates();
-
-            ITextRange range;
-            foreach (var n in notes)
+            // NOTE: If we can't save, we're discarding, but we should probably show a message
+            if (IsEditMode && !IsNew && CanSave)
             {
-                var link = string.Format("\"richtea.rpgm://notes/{0}\"", n.Id);
-                var skip = 0;
-
-                while ((range = document.GetRange(skip, TextConstants.MaxUnitCount)).FindText(n.Title, TextConstants.MaxUnitCount, FindOptions.Word) != 0)
-                {
-                    // NOTE: Set the document selection as workaround to prevent intermittent AccessViolationException,
-                    //       probably caused by a timing issue in the lower level code
-                    using (new SuppressSelection(document))
-                    {
-                        range.CharacterFormat.ForegroundColor = AccentColor;
-                        range.Link = link;
-                        skip = range.EndPosition;
-                    }
-                }
-            }
-
-            document.ApplyDisplayUpdates();
-        }
-
-        private bool CanSave()
-        {
-            return note != null && !string.IsNullOrWhiteSpace(note.Title);
-        }
-
-        public override async Task InitializeAsync(object parameter)
-        {
-            if (parameter is Guid)
-            {
-                original = await Database.GetAsync((Guid)parameter);
+                callback(false);
+                await Save();
             }
             else
             {
-                original = new Note();
-            }
-
-            // Copy so we can revert changes without database hit
-            note = new Note(original);
-
-            // This does nothing if document is null
-            TryInitializeDocument();
-
-            save.RaiseCanExecuteChanged();
-            RaisePropertyChanged("Title");
-        }
-
-        private void OnBackMessage(BackMessage message)
-        {
-            if (IsEditMode)
-            {
-                string rtfContent;
-                document.GetText(TextGetOptions.FormatRtf, out rtfContent);
-                note.RtfContent = rtfContent;
-
-                // TODO: Investigate if this method can be async safely
-                Task.Run(() => Database.SaveAsync(note)).Wait();
-                message.Handled = true;
-                IsEditMode = false;
+                callback(true);
             }
         }
 
-        private async void OnDelete()
+        public async void Delete()
         {
             await Database.DeleteAsync(note.Id);
+
+            // NOTE: Don't just close edit
+            IsEditMode = false;
 
             // TODO: Navigate forward to notes list, and possibly clean back stack
             Navigation.GoBack();
         }
 
-        private void OnDiscard()
+        public async void Discard()
         {
-            // Restore note to original as it likely has changes
-            note = new Note(original);
-            document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-            RaisePropertyChanged("Title");
+            await SetText();
             IsEditMode = false;
+            Title = null;
         }
 
-        private void OnNavigate(Uri uri)
+        public void Edit()
+        {
+            if (!string.IsNullOrEmpty(note.RtfContent))
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+            }
+
+            IsEditMode = true;
+        }
+
+        public void Navigate(Uri uri)
         {
             var parts = uri.AbsoluteUri.ToLower().Replace("richtea.rpgm://", string.Empty).Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
             var parameter = parts.Length > 1 ? parts[1] : null;
 
             if (parts[0] == "notes")
             {
-                Navigation.NavigateTo("Note", Guid.Parse(parameter));
+                Navigation
+                    .UriFor<NoteViewModel>()
+                    .WithParam(x => x.BackId, Id == null ? (Guid?)note.Id : null)
+                    .WithParam(x => x.Id, Guid.Parse(parameter))
+                    .Navigate();
             }
             else
             {
@@ -231,8 +158,51 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        private async void OnSave()
+        protected override void OnActivate()
         {
+            StatusBar.GetForCurrentView().ForegroundColor = COLOR_BLACK;
+        }
+
+        protected override void OnDeactivate(bool close)
+        {
+            StatusBar.GetForCurrentView().ForegroundColor = null;
+        }
+
+        protected override async void OnInitialize()
+        {
+            // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
+            //       thinks we've initialized once we unblock the UI thread
+            note = Id != null ? await Database.GetAsync(Id.Value) : new Note();
+
+            // Back ID is provided when the prevous page was a new note, so we need to update the back stack entry
+            // so that we return to the note, rather than the 'new note' view
+            if (BackId != null && Navigation.BackStack.Count > 0)
+            {
+                var oldEntry = Navigation.BackStack[Navigation.BackStack.Count - 1];
+                var newEntry = new PageStackEntry(oldEntry.SourcePageType, Navigation.UriFor<NoteViewModel>().WithParam(x => x.Id, BackId.Value).BuildUri().ToString(), oldEntry.NavigationTransitionInfo);
+                Navigation.BackStack.Remove(oldEntry);
+                Navigation.BackStack.Add(newEntry);
+            }
+
+            NotifyOfPropertyChange(() => CanSave);
+            NotifyOfPropertyChange(() => Title);
+
+            if (IsNew)
+            {
+                await SetText(true, false);
+                IsEditMode = true;
+            }
+            else
+            {
+                await SetText();
+            }
+        }
+
+        public async Task Save()
+        {
+            // NOTE: Use property as if not changed the field may be null
+            note.Title = Title;
+
             if (document != null)
             {
                 string rtfContent;
@@ -241,50 +211,47 @@ namespace RPGM.Notes.ViewModels
             }
 
             await Database.SaveAsync(note);
+            await SetText(false);
 
-            // Update the stored original for reverting changes
-            // NOTE: This is messy
-            original = new Note(note);
-
-            if (!IsEditMode)
-            {
-                // TODO: Navigate to note contents (sometimes?)
-                Navigation.GoBack();
-            }
-            
             IsEditMode = false;
+
+            NotifyOfPropertyChange(() => CanDelete);
+            NotifyOfPropertyChange(() => IsNew);
         }
 
-        private void TryInitializeDocument()
+        public async Task SetDocument(RichEditBox richEditBox)
         {
-            // When initialize complete
-            if (document != null && note != null && !string.IsNullOrEmpty(note.RtfContent))
+            // NOTE: We'd like to take the ITextDocument directly, and deal with the control
+            //       at the message binder, but it attempts to cast the document on another
+            //       thread, which results in an InvalidCastException.
+
+            if (document != null) throw new InvalidOperationException("Document has already been initialized.");
+            if (richEditBox == null) throw new ArgumentNullException("richEditBox");
+
+            document = richEditBox.Document;
+            TextFormat = new TextFormatViewModel(document);
+
+            await SetText();
+        }
+
+        private async Task SetText(bool setText = true, bool setLinks = true)
+        {
+            if (document == null || note == null || string.IsNullOrEmpty(note.RtfContent))
+            {
+                return;
+            }
+
+            if (setText)
             {
                 document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-                ApplyHyperlinks();
-            }
-        }
-
-        private class SuppressSelection : IDisposable
-        {
-            private readonly ITextDocument document;
-            private readonly int start;
-            private readonly int end;
-
-            public SuppressSelection(ITextDocument document)
-            {
-                if (document == null) throw new ArgumentNullException("document");
-
-                this.document = document;
-                this.start = document.Selection.StartPosition;
-                this.end = document.Selection.EndPosition;
-
-                document.Selection.SetRange(0, 0);
             }
 
-            public void Dispose()
+            if (setLinks)
             {
-                document.Selection.SetRange(start, end);
+                // TODO: Use an alias table
+                var notes = await Database.ListAsync();
+                var links = notes.Except(new[] { note }).ToDictionary(x => x.Title, x => string.Format("richtea.rpgm://notes/{0}", x.Id));
+                document.AutoHyperlinks(links, AccentColor);
             }
         }
     }

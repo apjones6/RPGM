@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Threading.Tasks;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Messaging;
-using GalaSoft.MvvmLight.Views;
+using Caliburn.Micro;
 using RPGM.Notes.Models;
 using Windows.UI;
 using Windows.UI.Xaml;
 
 namespace RPGM.Notes.ViewModels
 {
-    public abstract class ViewModel : ViewModelBase
+    public abstract class ViewModel : Screen
     {
         private readonly INavigationService navigation;
         private readonly IDatabase database;
@@ -37,19 +34,9 @@ namespace RPGM.Notes.ViewModels
             get { return database; }
         }
 
-        protected IMessenger Messenger
-        {
-            get { return MessengerInstance; }
-        }
-
         protected INavigationService Navigation
         {
             get { return navigation; }
-        }
-
-        public virtual Task InitializeAsync(object parameter)
-        {
-            return Task.FromResult(0);
         }
     }
 }
