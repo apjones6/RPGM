@@ -230,7 +230,7 @@
                     Grid.Row="1"
                     IsEnabled="{Binding IsEditMode}"
                     Margin="0,-6.5,0,26.5"
-                    PlaceholderText="Note"
+                    PlaceholderText="title"
                     Style="{StaticResource HeaderTextBoxStyle}"
                     />
                 <Canvas
@@ -247,7 +247,6 @@
                     FontFamily="Segoe UI"
                     IsEnabled="{Binding IsEditMode}"
                     Margin="0,0,19,0"
-                    PlaceholderText="Type here..."
                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
                     Style="{StaticResource RichEditBoxStyle}"
                     TextWrapping="Wrap"

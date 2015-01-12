@@ -62,11 +62,6 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        public void Add()
-        {
-            Navigation.NavigateToViewModel<NoteViewModel>();
-        }
-
         private void BackPressed(object sender, BackPressedEventArgs e)
         {
             if (IsSelectMode)
@@ -75,21 +70,6 @@ namespace RPGM.Notes.ViewModels
                 e.Handled = true;
             }
         }
-
-        //public override void CanClose(Action<bool> callback)
-        //{
-        //    // NOTE: This is not closed on suspend for some reason until resume (counterproductively)
-        //    //       Therefore we implement a BackPressed handler explicitly
-        //    if (IsSelectMode)
-        //    {
-        //        IsSelectMode = false;
-        //        callback(false);
-        //    }
-        //    else
-        //    {
-        //        callback(true);
-        //    }
-        //}
 
         public async void Delete(Note note)
         {
@@ -109,6 +89,11 @@ namespace RPGM.Notes.ViewModels
             IsSelectMode = false;
 
             await Database.DeleteAsync(ids);
+        }
+
+        public void New()
+        {
+            Navigation.NavigateToViewModel<NoteViewModel>();
         }
 
         protected override void OnActivate()

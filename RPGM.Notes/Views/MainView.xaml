@@ -105,10 +105,10 @@
         <CommandBar>
             <CommandBar.PrimaryCommands>
                 <AppBarButton
-                    x:Name="Add"
-                    x:Uid="AppBarAdd"
+                    x:Name="New"
+                    x:Uid="AppBarNew"
                     Icon="Add"
-                    Label="add"
+                    Label="new"
                     Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}"
                     />
                 <AppBarButton
