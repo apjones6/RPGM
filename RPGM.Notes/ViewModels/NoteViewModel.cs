@@ -139,6 +139,20 @@ namespace RPGM.Notes.ViewModels
             IsEditMode = true;
         }
 
+        private void HandleBackId()
+        {
+            // Back ID is provided when the prevous page was a new note, so we need to update the back stack entry
+            // so that we return to the note, rather than the 'new note' view
+            if (BackId != null && Navigation.BackStack.Count > 0)
+            {
+                var oldEntry = Navigation.BackStack[Navigation.BackStack.Count - 1];
+                var newEntry = new PageStackEntry(oldEntry.SourcePageType, Navigation.UriFor<NoteViewModel>().WithParam(x => x.Id, BackId.Value).BuildUri().ToString(), oldEntry.NavigationTransitionInfo);
+                Navigation.BackStack.Remove(oldEntry);
+                Navigation.BackStack.Add(newEntry);
+                BackId = null;
+            }
+        }
+
         public void Navigate(Uri uri)
         {
             var parts = uri.AbsoluteUri.ToLower().Replace("richtea.rpgm://", string.Empty).Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
@@ -170,18 +184,23 @@ namespace RPGM.Notes.ViewModels
 
         protected override async void OnInitialize()
         {
-            // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
-            //       thinks we've initialized once we unblock the UI thread
-            note = Id != null ? await Database.GetAsync(Id.Value) : new Note();
-
-            // Back ID is provided when the prevous page was a new note, so we need to update the back stack entry
-            // so that we return to the note, rather than the 'new note' view
-            if (BackId != null && Navigation.BackStack.Count > 0)
+            if (Id != null)
             {
-                var oldEntry = Navigation.BackStack[Navigation.BackStack.Count - 1];
-                var newEntry = new PageStackEntry(oldEntry.SourcePageType, Navigation.UriFor<NoteViewModel>().WithParam(x => x.Id, BackId.Value).BuildUri().ToString(), oldEntry.NavigationTransitionInfo);
-                Navigation.BackStack.Remove(oldEntry);
-                Navigation.BackStack.Add(newEntry);
+                // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
+                //       thinks we've initialized once we unblock the UI thread
+                note = await Database.GetAsync(Id.Value);
+            }
+            else
+            {
+                note = new Note();
+            }
+
+            // Navigate over the note twice, delete it, and back to an earlier access
+            if (note == null)
+            {
+                HandleBackId();
+                Navigation.GoBack();
+                return;
             }
 
             NotifyOfPropertyChange(() => CanSave);
@@ -196,6 +215,8 @@ namespace RPGM.Notes.ViewModels
             {
                 await SetText();
             }
+
+            HandleBackId();
         }
 
         public async Task Save()

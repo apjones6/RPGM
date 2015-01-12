@@ -40,7 +40,8 @@ namespace RPGM.Notes.Models
 
         public Task<Note> GetAsync(Guid id)
         {
-            return GetAsync<Note>(id);
+            // We want to return null if not found, as InvalidOperationException is too nondescriptive
+            return FindAsync<Note>(id);
         }
 
         public async Task<IEnumerable<Note>> ListAsync()
