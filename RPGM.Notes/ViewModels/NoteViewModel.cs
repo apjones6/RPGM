@@ -7,6 +7,7 @@ using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.ViewModels
 {
@@ -16,7 +17,6 @@ namespace RPGM.Notes.ViewModels
 
         private ITextDocument document;
         private bool editMode;
-        private Guid? id;
         private Note note;
         private TextFormatViewModel textFormat;
         private string title;
@@ -24,6 +24,12 @@ namespace RPGM.Notes.ViewModels
         public NoteViewModel(INavigationService navigation, IDatabase database)
             : base(navigation, database)
         {
+        }
+
+        public Guid? BackId
+        {
+            get;
+            set;
         }
 
         public bool CanDelete
@@ -43,12 +49,8 @@ namespace RPGM.Notes.ViewModels
 
         public Guid? Id
         {
-            get { return id; }
-            set
-            {
-                id = value;
-                NotifyOfPropertyChange(() => Id);
-            }
+            get;
+            set;
         }
 
         public bool IsEditMode
@@ -146,6 +148,7 @@ namespace RPGM.Notes.ViewModels
             {
                 Navigation
                     .UriFor<NoteViewModel>()
+                    .WithParam(x => x.BackId, Id == null ? (Guid?)note.Id : null)
                     .WithParam(x => x.Id, Guid.Parse(parameter))
                     .Navigate();
             }
@@ -170,6 +173,16 @@ namespace RPGM.Notes.ViewModels
             // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
             //       thinks we've initialized once we unblock the UI thread
             note = Id != null ? await Database.GetAsync(Id.Value) : new Note();
+
+            // Back ID is provided when the prevous page was a new note, so we need to update the back stack entry
+            // so that we return to the note, rather than the 'new note' view
+            if (BackId != null && Navigation.BackStack.Count > 0)
+            {
+                var oldEntry = Navigation.BackStack[Navigation.BackStack.Count - 1];
+                var newEntry = new PageStackEntry(oldEntry.SourcePageType, Navigation.UriFor<NoteViewModel>().WithParam(x => x.Id, BackId.Value).BuildUri().ToString(), oldEntry.NavigationTransitionInfo);
+                Navigation.BackStack.Remove(oldEntry);
+                Navigation.BackStack.Add(newEntry);
+            }
 
             NotifyOfPropertyChange(() => CanSave);
             NotifyOfPropertyChange(() => Title);
@@ -201,7 +214,6 @@ namespace RPGM.Notes.ViewModels
             await SetText(false);
 
             IsEditMode = false;
-            Id = note.Id;
 
             NotifyOfPropertyChange(() => CanDelete);
             NotifyOfPropertyChange(() => IsNew);
