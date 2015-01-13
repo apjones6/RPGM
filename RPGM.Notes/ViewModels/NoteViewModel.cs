@@ -198,7 +198,6 @@ namespace RPGM.Notes.ViewModels
             // Navigate over the note twice, delete it, and back to an earlier access
             if (note == null)
             {
-                HandleBackId();
                 Navigation.GoBack();
                 return;
             }
