@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using RPGM.Notes.Models;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.ViewManagement;
@@ -115,11 +116,27 @@ namespace RPGM.Notes.ViewModels
         {
             await Database.DeleteAsync(note.Id);
 
-            // NOTE: Don't just close edit
-            IsEditMode = false;
+            // Remove any references to this note from back stack
+            // NOTE: I'm not entirely comfortable with this approach, and would prefer to handle in OnInitialize()
+            var id = note.Id.ToString();
+            for (var i = Navigation.BackStack.Count - 1; i >= 0; i--)
+            {
+                // NOTE: some of this code is copied from Caliburn.Micro internals, and probably shouldn't be
+                //       relied upon through updates to that dependency
+                var entry = Navigation.BackStack[i];
+                if (entry.SourcePageType == Navigation.CurrentSourcePageType && entry.Parameter is string && ((string)entry.Parameter).StartsWith("caliburn://"))
+                {
+                    var uri = new Uri((string)entry.Parameter);
+                    if (!string.IsNullOrEmpty(uri.Query) && id == new WwwFormUrlDecoder(uri.Query).GetFirstValueByName("Id"))
+                    {
+                        Navigation.BackStack.RemoveAt(i);
+                    }
+                }
+            }
 
-            // TODO: Navigate forward to notes list, and possibly clean back stack
-            Navigation.GoBack();
+            // Stop CanClose from preventing navigation
+            IsEditMode = false;
+            Close();
         }
 
         public async void Discard()
@@ -137,6 +154,19 @@ namespace RPGM.Notes.ViewModels
             }
 
             IsEditMode = true;
+        }
+
+        private void Close()
+        {
+            // If we don't have a back stack, go to main list
+            if (Navigation.CanGoBack)
+            {
+                Navigation.GoBack();
+            }
+            else
+            {
+                Navigation.NavigateToViewModel<MainViewModel>();
+            }
         }
 
         private void HandleBackId()
@@ -195,10 +225,11 @@ namespace RPGM.Notes.ViewModels
                 note = new Note();
             }
 
-            // Navigate over the note twice, delete it, and back to an earlier access
             if (note == null)
             {
-                Navigation.GoBack();
+                // NOTE: There are issues with navigation from here being ignored, so we delete the
+                //       back stack entries on note deletion
+                Close();
                 return;
             }
 
