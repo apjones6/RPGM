@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SQLite.Net;
 using SQLite.Net.Async;
@@ -19,15 +20,19 @@ namespace RPGM.Notes.Models
     public sealed class Database : SQLiteAsyncConnection, IDatabase
     {
         private static readonly Lazy<RPGMConnection> connection = new Lazy<RPGMConnection>(() => new RPGMConnection());
+        private readonly IDictionary<Guid, Note> cache = new Dictionary<Guid, Note>();
+
+        private bool initialized;
 
         public Database()
             : base(() => connection.Value)
         {
         }
 
-        public Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id)
         {
-            return DeleteAsync<Note>(id);
+            await DeleteAsync<Note>(id).ConfigureAwait(false);
+            cache.Remove(id);
         }
 
         public async Task DeleteAsync(IEnumerable<Guid> ids)
@@ -35,31 +40,43 @@ namespace RPGM.Notes.Models
             foreach (var id in ids)
             {
                 await DeleteAsync<Note>(id).ConfigureAwait(false);
+                cache.Remove(id);
             }
         }
 
-        public Task<Note> GetAsync(Guid id)
+        public async Task<Note> GetAsync(Guid id)
         {
-            // We want to return null if not found, as InvalidOperationException is too nondescriptive
-            return FindAsync<Note>(id);
+            return initialized ? (cache.ContainsKey(id) ? cache[id] : null) : await FindAsync<Note>(id).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Note>> ListAsync()
         {
             // TODO: Find a Linq way to exclude RtfContent (and other unnecessary properties)
             // TODO: Consider direct SQL until above
-            // NOTE: This internally throws and is handled by core DLL, but still shows in output
-            return await Table<Note>().OrderByDescending(x => x.DateModified).ToListAsync()/*.ConfigureAwait(false)*/;
+            if (!initialized)
+            {
+                initialized = true;
+                foreach (var note in await Table<Note>().ToListAsync().ConfigureAwait(false))
+                {
+                    cache.Add(note.Id, note);
+                }
+            }
+
+            return cache
+                .Values
+                .OrderByDescending(x => x.DateModified)
+                .ToArray();
         }
 
-        public Task SaveAsync(Note note)
+        public async Task SaveAsync(Note note)
         {
             // Set/update dates
             var now = DateTimeOffset.UtcNow;
             if (note.Id == Guid.Empty) note.DateCreated = now;
             note.DateModified = now;
 
-            return InsertOrReplaceAsync(note);
+            await InsertOrReplaceAsync(note).ConfigureAwait(false);
+            cache[note.Id] = note;
         }
 
         private class RPGMConnection : SQLiteConnectionWithLock
