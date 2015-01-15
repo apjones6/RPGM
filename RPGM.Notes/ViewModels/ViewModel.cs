@@ -2,6 +2,7 @@
 using Caliburn.Micro;
 using RPGM.Notes.Models;
 using Windows.UI;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 
 namespace RPGM.Notes.ViewModels
@@ -37,6 +38,16 @@ namespace RPGM.Notes.ViewModels
         protected INavigationService Navigation
         {
             get { return navigation; }
+        }
+
+        protected virtual Color? StatusBarColor
+        {
+            get { return null; }
+        }
+
+        protected override void OnActivate()
+        {
+            StatusBar.GetForCurrentView().ForegroundColor = StatusBarColor;
         }
     }
 }

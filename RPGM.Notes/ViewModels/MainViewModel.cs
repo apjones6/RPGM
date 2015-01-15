@@ -98,16 +98,19 @@ namespace RPGM.Notes.ViewModels
 
         protected override void OnActivate()
         {
+            base.OnActivate();
             HardwareButtons.BackPressed += BackPressed;
         }
 
         protected override void OnDeactivate(bool close)
         {
+            base.OnDeactivate(close);
             HardwareButtons.BackPressed -= BackPressed;
         }
 
         protected override async void OnInitialize()
         {
+            base.OnInitialize();
             foreach (var note in await Database.ListAsync())
             {
                 notes.Add(note);

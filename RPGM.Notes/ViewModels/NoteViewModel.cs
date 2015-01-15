@@ -6,7 +6,6 @@ using RPGM.Notes.Models;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Text;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
@@ -75,6 +74,11 @@ namespace RPGM.Notes.ViewModels
         public bool IsNotEditMode
         {
             get { return !editMode; }
+        }
+
+        protected override Color? StatusBarColor
+        {
+            get { return COLOR_BLACK; }
         }
 
         public TextFormatViewModel TextFormat
@@ -202,18 +206,10 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        protected override void OnActivate()
-        {
-            StatusBar.GetForCurrentView().ForegroundColor = COLOR_BLACK;
-        }
-
-        protected override void OnDeactivate(bool close)
-        {
-            StatusBar.GetForCurrentView().ForegroundColor = null;
-        }
-
         protected override async void OnInitialize()
         {
+            base.OnInitialize();
+
             if (Id != null)
             {
                 // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
