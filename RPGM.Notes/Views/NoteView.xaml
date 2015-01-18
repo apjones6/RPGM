@@ -195,15 +195,24 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock
-            x:Uid="ApplicationTitle"
-            Grid.Row="0"
-            FontFamily="{StaticResource PhoneFontFamilySemiBold}"
-            Margin="19,12,0,0"
-            Style="{StaticResource TitleTextBlockStyle}"
-            Text="ROLEPLAY GAME MANAGER"
-            />
-        
+        <Button x:Name="BackToStart" Grid.Row="0" Margin="19,2,0,-9.5" Style="{StaticResource BackButtonStyle}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    FontFamily="Segoe UI Symbol"
+                    Margin="0,-3.5,0,0"
+                    Style="{ThemeResource TitleTextBlockStyle}"
+                    Text="&#xE016;"
+                    />
+                <TextBlock
+                    x:Uid="ApplicationTitle"
+                    FontFamily="{StaticResource PhoneFontFamilySemiBold}"
+                    Margin="9,0,0,0"
+                    Style="{ThemeResource TitleTextBlockStyle}"
+                    Text="ROLEPLAY GAME MANAGER"
+                    />
+            </StackPanel>
+        </Button>
+
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid>
                 <Grid.ChildrenTransitions>

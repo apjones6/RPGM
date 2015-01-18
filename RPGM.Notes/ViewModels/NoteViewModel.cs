@@ -102,6 +102,23 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
+        public void BackToStart()
+        {
+            // Remove last note view sequence
+            for (var i = Navigation.BackStack.Count - 1; i >= 0; i--)
+            {
+                if (Navigation.BackStack[i].SourcePageType == Navigation.CurrentSourcePageType)
+                {
+                    Navigation.BackStack.RemoveAt(i);
+                }
+                else
+                {
+                    Close();
+                    break;
+                }
+            }
+        }
+
         public override async void CanClose(Action<bool> callback)
         {
             // NOTE: If we can't save, we're discarding, but we should probably show a message
