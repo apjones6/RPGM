@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using RPGM.Notes.Models;
@@ -271,6 +272,12 @@ namespace RPGM.Notes.ViewModels
             {
                 string rtfContent;
                 document.GetText(TextGetOptions.FormatRtf, out rtfContent);
+
+                // The UI control appends newlines, so we remove them
+                // NOTE: We may add a single newline in edit mode, to simplify adding new content
+                var regex = new Regex(@"(\r|\n|\\par|\\pard|\\ltrpar|\\tx\d+|\\fs\d+)*}(\r|\n|\0)*$", RegexOptions.IgnoreCase);
+                rtfContent = regex.Replace(rtfContent, "}\r\n\0");
+
                 note.RtfContent = rtfContent;
             }
 
