@@ -188,13 +188,23 @@
         </Style>
     </Page.Resources>
     
-    <Grid Margin="19,0,0,0">
+    <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+        <TextBlock
+            x:Uid="ApplicationTitle"
+            Grid.Row="0"
+            FontFamily="{StaticResource PhoneFontFamilySemiBold}"
+            Margin="19,12,0,0"
+            Style="{StaticResource TitleTextBlockStyle}"
+            Text="ROLEPLAY GAME MANAGER"
+            />
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid>
                 <Grid.ChildrenTransitions>
                     <TransitionCollection>
@@ -204,49 +214,39 @@
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <TextBlock
-                    x:Uid="ApplicationTitle"
-                    Grid.Row="0"
-                    FontFamily="{StaticResource PhoneFontFamilySemiBold}"
-                    Margin="0,12,0,0"
-                    Style="{StaticResource TitleTextBlockStyle}"
-                    Text="ROLEPLAY GAME MANAGER"
-                    />
                 <TextBox
                     x:Name="Title"
                     x:Uid="TextBoxTitle"
-                    Grid.Row="1"
+                    Grid.Row="0"
                     FontSize="42"
                     FontWeight="ExtraBlack"
                     IsEnabled="{Binding IsEditMode}"
-                    Margin="0,0,0,10"
+                    Margin="19,0,0,10"
                     PlaceholderText="title"
                     Style="{StaticResource HeaderTextBoxStyle}"
                     />
                 <Canvas
-                    Grid.Row="2"
+                    Grid.Row="1"
                     Background="Transparent"
-                    Margin="-19,0,0,0"
                     Tapped="OnCanvasTapped"
                     />
                 <RichEditBox
                     x:Name="RtfContentBox"
                     x:Uid="TextBoxRtfContent"
-                    Grid.Row="2"
+                    Grid.Row="1"
                     cal:Message.Attach="[Event Loaded] = [Action SetDocument($source)]"
                     FontFamily="Segoe UI"
                     IsEnabled="{Binding IsEditMode}"
-                    Margin="0,0,19,0"
-                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    Margin="19,0"
+                    ScrollViewer.VerticalScrollMode="Disabled"
                     Style="{StaticResource RichEditBoxStyle}"
                     TextWrapping="Wrap"
                     />
                 <c:RichEditBoxLinker
-                    Grid.Row="2"
+                    Grid.Row="1"
                     cal:Message.Attach="[Event Navigate] = [Action Navigate($navigateuri)]"
                     IsEnabled="{Binding IsNotEditMode}"
                     RichEditBox="{Binding ElementName=RtfContentBox}"
@@ -255,7 +255,7 @@
         </ScrollViewer>
 
         <c:OcclusionPlaceholder
-            Grid.Row="1"
+            Grid.Row="2"
             />
     </Grid>
 
