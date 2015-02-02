@@ -17,7 +17,7 @@
     <ProjectTypeGuids>{76F1466A-8B6D-4E39-A767-685A06062A39};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>df993c56</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>103efdbc</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -165,15 +165,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Caliburn.Micro.2.0.1\lib\wpa81\Microsoft.Xaml.Interactivity.dll</HintPath>
     </Reference>
-    <Reference Include="SQLite.Net, Version=2.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SQLite.Net-PCL.2.4.1\lib\portable-win8+net45+wp8+wpa81+MonoAndroid1+MonoTouch1\SQLite.Net.dll</HintPath>
+    <Reference Include="SQLite.Net">
+      <HintPath>..\packages\SQLite.Net-PCL.2.5.1\lib\portable-win8+net45+wp8+wpa81+MonoAndroid1+MonoTouch1\SQLite.Net.dll</HintPath>
     </Reference>
     <Reference Include="SQLite.Net.Async">
-      <HintPath>..\packages\SQLite.Net.Async-PCL.2.4.1\lib\portable-win8+net45+wp8+wpa81+MonoAndroid1+MonoTouch1\SQLite.Net.Async.dll</HintPath>
+      <HintPath>..\packages\SQLite.Net.Async-PCL.2.5.1\lib\portable-win8+net45+wp8+wpa81+MonoAndroid1+MonoTouch1\SQLite.Net.Async.dll</HintPath>
     </Reference>
-    <Reference Include="SQLite.Net.Platform.WindowsPhoneApp81">
-      <HintPath>..\packages\SQLite.Net.Platform.WindowsPhoneApp81.2.4.1\lib\wpa81\SQLite.Net.Platform.WindowsPhoneApp81.dll</HintPath>
+    <Reference Include="SQLite.Net.Platform.WinRT">
+      <HintPath>..\packages\SQLite.Net.Platform.WinRT.2.5.1\lib\portable-win81+wpa81\SQLite.Net.Platform.WinRT.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCL">
       <HintPath>..\packages\SQLitePCL.3.8.7.2\lib\wpa81\SQLitePCL.dll</HintPath>
@@ -207,10 +206,8 @@
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
     <Error Condition="!Exists('..\packages\SQLitePCL.3.8.7.2\build\wpa81\SQLitePCL.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCL.3.8.7.2\build\wpa81\SQLitePCL.props'))" />
     <Error Condition="!Exists('..\packages\SQLitePCL.3.8.7.2\build\wpa81\SQLitePCL.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCL.3.8.7.2\build\wpa81\SQLitePCL.targets'))" />
-    <Error Condition="!Exists('..\packages\SQLite.Net.Platform.WindowsPhoneApp81.2.4.1\build\SQLite.Net.Platform.WindowsPhoneApp81.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLite.Net.Platform.WindowsPhoneApp81.2.4.1\build\SQLite.Net.Platform.WindowsPhoneApp81.targets'))" />
   </Target>
   <Import Project="..\packages\SQLitePCL.3.8.7.2\build\wpa81\SQLitePCL.targets" Condition="Exists('..\packages\SQLitePCL.3.8.7.2\build\wpa81\SQLitePCL.targets')" />
-  <Import Project="..\packages\SQLite.Net.Platform.WindowsPhoneApp81.2.4.1\build\SQLite.Net.Platform.WindowsPhoneApp81.targets" Condition="Exists('..\packages\SQLite.Net.Platform.WindowsPhoneApp81.2.4.1\build\SQLite.Net.Platform.WindowsPhoneApp81.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

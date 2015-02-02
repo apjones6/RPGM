@@ -23,10 +23,8 @@ Currently this project uses NuGet packages which are not included in the GIT rep
 
 This project now uses SQLite to store created data. To do this, you must install the appropriate Visual Studio extension SDK for their development environment. Please follow the [guidance information](https://sqlitepcl.codeplex.com/documentation) for windows phone 8.1 to do this (and don't forget to set your solution to build in x86).
 
-In addition the library we are using (SQLite.Net-PCL) does not currently support the portable version of Windows Phone 8.1. This should be the same as WinRT, and the advice is to build said version for target wpa81. I have done this myself and included the resulting nupkg into /package-source. Simply add this folder as a package source in your build environment for NuGet package restore to find it. This will be removed when the package supports portable WP8.1 fully. Naturally there may be issues with the WinRT version as we develop.
-
+ - SQLite.Net-PCL: 2.5.1
  - SQLite SDK: 3.8.8
- - SQLite.Net-PCL: 2.4.1
 
 ## Git Flow ##
 
