@@ -77,6 +77,11 @@ namespace RPGM.Notes.ViewModels
             get { return !editMode; }
         }
 
+        public bool IsNotNew
+        {
+            get { return note == null || note.Id != Guid.Empty; }
+        }
+
         protected override Color? StatusBarColor
         {
             get { return COLOR_BLACK; }
