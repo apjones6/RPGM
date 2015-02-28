@@ -32,6 +32,7 @@
                 </FlyoutBase.AttachedFlyout>
 
                 <TextBlock
+                    ContinuumNavigationTransitionInfo.IsExitElement="True"
                     Style="{ThemeResource ListViewItemTextBlockStyle}"
                     Text="{Binding Title}"
                     />
@@ -53,13 +54,15 @@
         </Style>
     </Page.Resources>
     
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition>
+                <ContinuumNavigationTransitionInfo />
+            </NavigationThemeTransition>
+        </TransitionCollection>
+    </Page.Transitions>
+    
     <Grid Margin="19,0,0,0">
-        <Grid.ChildrenTransitions>
-            <TransitionCollection>
-                <EntranceThemeTransition />
-            </TransitionCollection>
-        </Grid.ChildrenTransitions>
-        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -83,6 +86,7 @@
             />
         <ListView
             x:Name="NotesListView"
+            ContinuumNavigationTransitionInfo.ExitElementContainer="True"
             Grid.Row="2"
             ItemContainerStyle="{StaticResource ItemContainerStyle}"
             ItemsSource="{Binding Notes}"
