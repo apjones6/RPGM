@@ -236,13 +236,4 @@
     <c:ObjectPropertyConverter x:Key="ObjectPropertyConverter" />
     <c:TimeAgoConverter x:Key="TimeAgoConverter" />
 
-    <!-- TODO: Use it or lose it -->
-    <TransitionCollection x:Key="ContinuumTransition">
-        <NavigationThemeTransition>
-            <NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                <ContinuumNavigationTransitionInfo />
-            </NavigationThemeTransition.DefaultNavigationTransitionInfo>
-        </NavigationThemeTransition>
-    </TransitionCollection>
-
 </ResourceDictionary>
