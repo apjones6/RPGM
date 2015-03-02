@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="RPGM.Notes.Views.TextFormatView"
+    x:Class="RPGM.Notes.Views.TextFormatFlyout"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     

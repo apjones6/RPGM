@@ -1,27 +1,47 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Composition;
 using System.Linq;
-using Caliburn.Micro;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
+using Microsoft.Practices.Prism.Mvvm.Interfaces;
 using RPGM.Notes.Models;
-using Windows.Phone.UI.Input;
+using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.ViewModels
 {
-    public class MainViewModel : ViewModel
+    [Export]
+    public class MainViewModel : ViewModel, IBackNavigationAware
     {
-        private readonly ObservableCollection<Note> notes = new ObservableCollection<Note>();
+        private readonly IDatabase database;
+        private readonly DelegateCommandBase deleteSelected;
+        private readonly INavigationService navigation;
+        private readonly ICommand @new;
+        private readonly ObservableCollection<NoteItemViewModel> notes = new ObservableCollection<NoteItemViewModel>();
+        private readonly ICommand select;
 
-        private IList<Note> selectedItems;
+        private IList<NoteItemViewModel> selectedItems;
         private bool selectMode;
 
-        public MainViewModel(INavigationService navigation, IDatabase database)
-            : base(navigation, database)
+        [ImportingConstructor]
+        public MainViewModel(IDatabase database, INavigationService navigation)
         {
+            if (database == null) throw new ArgumentNullException("database");
+            if (navigation == null) throw new ArgumentNullException("navigation");
+
+            this.database = database;
+            this.deleteSelected = DelegateCommand.FromAsyncHandler(DeleteSelected, () => selectedItems != null && selectedItems.Count > 0);
+            this.@new = new DelegateCommand(New);
+            this.navigation = navigation;
+            this.select = new DelegateCommand(Select);
         }
 
-        public bool CanDeleteSelected
+        public ICommand DeleteSelectedCommand
         {
-            get { return selectedItems != null && selectedItems.Count > 0; }
+            get { return deleteSelected; }
         }
 
         public bool IsNotSelectMode
@@ -34,16 +54,25 @@ namespace RPGM.Notes.ViewModels
             get { return selectMode; }
             set
             {
-                selectMode = value;
-                NotifyOfPropertyChange(() => CanDeleteSelected);
-                NotifyOfPropertyChange(() => IsNotSelectMode);
-                NotifyOfPropertyChange(() => IsSelectMode);
+                SetProperty(ref selectMode, value);
+                deleteSelected.RaiseCanExecuteChanged();
+                OnPropertyChanged(() => IsNotSelectMode);
             }
         }
 
-        public ObservableCollection<Note> Notes
+        public ICommand NewCommand
+        {
+            get { return @new; }
+        }
+
+        public ObservableCollection<NoteItemViewModel> Notes
         {
             get { return notes; }
+        }
+
+        public ICommand SelectCommand
+        {
+            get { return select; }
         }
 
         public object SelectedItems
@@ -52,68 +81,41 @@ namespace RPGM.Notes.ViewModels
             set
             {
                 // Only works with object property
-                selectedItems = ((IList<object>)value).Cast<Note>().ToArray();
+                SetProperty(ref selectedItems, ((IList<object>)value).Cast<NoteItemViewModel>().ToArray());
 
                 // Deselect all items cancels multiple selection mode
                 IsSelectMode = selectedItems.Count > 0;
-
-                NotifyOfPropertyChange(() => CanDeleteSelected);
-                NotifyOfPropertyChange(() => SelectedItems);
             }
         }
 
-        private void BackPressed(object sender, BackPressedEventArgs e)
-        {
-            if (IsSelectMode)
-            {
-                IsSelectMode = false;
-                e.Handled = true;
-            }
-        }
-
-        public async void Delete(Note note)
-        {
-            await Database.DeleteAsync(note.Id);
-            notes.Remove(note);
-        }
-
-        public async void DeleteSelected()
+        public async Task DeleteSelected()
         {
             var ids = selectedItems.Select(x => x.Id).ToArray();
-            foreach (var note in selectedItems)
+            foreach (var item in selectedItems)
             {
-                notes.Remove(note);
+                notes.Remove(item);
             }
 
             // This triggers UI to empty SelectedItems property
             IsSelectMode = false;
 
-            await Database.DeleteAsync(ids);
+            await database.DeleteAsync(ids);
         }
 
         public void New()
         {
-            Navigation.NavigateToViewModel<NoteViewModel>();
+            navigation.Navigate("Note", null);
         }
 
-        protected override void OnActivate()
+        public override async void OnNavigatedTo(object navigationParameter, NavigationMode navigationMode, Dictionary<string, object> viewModelState)
         {
-            base.OnActivate();
-            HardwareButtons.BackPressed += BackPressed;
-        }
+            base.OnNavigatedTo(navigationParameter, navigationMode, viewModelState);
 
-        protected override void OnDeactivate(bool close)
-        {
-            base.OnDeactivate(close);
-            HardwareButtons.BackPressed -= BackPressed;
-        }
-
-        protected override async void OnInitialize()
-        {
-            base.OnInitialize();
-            foreach (var note in await Database.ListAsync())
+            // TODO: Maintain as many items as we can, as the associated views are used by continuum transitions
+            notes.Clear();
+            foreach (var note in await database.ListAsync())
             {
-                notes.Add(note);
+                notes.Add(new NoteItemViewModel(note, database, navigation));
             }
         }
 
@@ -122,12 +124,15 @@ namespace RPGM.Notes.ViewModels
             IsSelectMode = true;
         }
 
-        public void View(Note note)
+        public bool TryGoBack()
         {
-            Navigation
-                .UriFor<NoteViewModel>()
-                .WithParam(x => x.Id, note.Id)
-                .Navigate();
+            if (IsSelectMode)
+            {
+                IsSelectMode = false;
+                return false;
+            }
+
+            return true;
         }
     }
 }

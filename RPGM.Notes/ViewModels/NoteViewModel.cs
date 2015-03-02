@@ -1,69 +1,78 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Composition;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Caliburn.Micro;
+using System.Windows.Input;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
+using Microsoft.Practices.Prism.Mvvm.Interfaces;
 using RPGM.Notes.Models;
-using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Text;
-using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.ViewModels
 {
-    public class NoteViewModel : ViewModel
+    [Export]
+    public class NoteViewModel : ViewModel, IBackNavigationAware
     {
-        private static readonly Color COLOR_BLACK = Color.FromArgb(0, 0, 0, 0);
+        private readonly IDatabase database;
+        private readonly DelegateCommandBase delete;
+        private readonly DelegateCommandBase discard;
+        private readonly ICommand edit;
+        private readonly INavigationService navigation;
+        private readonly DelegateCommandBase save;
 
         private ITextDocument document;
-        private bool editMode;
+        private bool isEditMode;
         private Note note;
         private TextFormatViewModel textFormat;
         private string title;
 
-        public NoteViewModel(INavigationService navigation, IDatabase database)
-            : base(navigation, database)
+        [ImportingConstructor]
+        public NoteViewModel(IDatabase database, INavigationService navigation)
         {
+            if (database == null) throw new ArgumentNullException("database");
+            if (navigation == null) throw new ArgumentNullException("navigation");
+
+            this.database = database;
+            this.delete = DelegateCommand.FromAsyncHandler(Delete, () => !IsNew);
+            this.discard = DelegateCommand.FromAsyncHandler(Discard, () => IsEditMode && !IsNew);
+            this.edit = new DelegateCommand(Edit);
+            this.navigation = navigation;
+            this.save = DelegateCommand.FromAsyncHandler(Save, () => !string.IsNullOrWhiteSpace(Title));
         }
 
-        public Guid? BackId
+        public ICommand DeleteCommand
         {
-            get;
-            set;
+            get { return delete; }
         }
 
-        public bool CanDelete
+        public ICommand DiscardCommand
         {
-            get { return !IsNew; }
+            get { return discard; }
         }
 
-        public bool CanDiscard
+        public ICommand EditCommand
         {
-            get { return IsEditMode && !IsNew; }
+            get { return edit; }
         }
 
-        public bool CanSave
-        {
-            get { return !string.IsNullOrWhiteSpace(Title); }
-        }
-
-        public Guid? Id
-        {
-            get;
-            set;
-        }
+        [RestorableState]
+        public Guid Id { get; set; }
 
         public bool IsEditMode
         {
-            get { return editMode; }
+            get { return isEditMode; }
             set
             {
-                editMode = value;
-                NotifyOfPropertyChange(() => CanDiscard);
-                NotifyOfPropertyChange(() => CanSave);
-                NotifyOfPropertyChange(() => IsEditMode);
-                NotifyOfPropertyChange(() => IsNotEditMode);
+                SetProperty(ref isEditMode, value);
+                discard.RaiseCanExecuteChanged();
+                save.RaiseCanExecuteChanged();
+                OnPropertyChanged(() => IsNotEditMode);
             }
         }
 
@@ -74,7 +83,7 @@ namespace RPGM.Notes.ViewModels
 
         public bool IsNotEditMode
         {
-            get { return !editMode; }
+            get { return !isEditMode; }
         }
 
         public bool IsNotNew
@@ -82,19 +91,15 @@ namespace RPGM.Notes.ViewModels
             get { return note == null || note.Id != Guid.Empty; }
         }
 
-        protected override Color? StatusBarColor
+        public ICommand SaveCommand
         {
-            get { return COLOR_BLACK; }
+            get { return save; }
         }
 
         public TextFormatViewModel TextFormat
         {
             get { return textFormat; }
-            set
-            {
-                textFormat = value;
-                NotifyOfPropertyChange(() => TextFormat);
-            }
+            set { SetProperty(ref textFormat, value); }
         }
 
         public string Title
@@ -102,71 +107,22 @@ namespace RPGM.Notes.ViewModels
             get { return title ?? (note != null ? note.Title : null); }
             set
             {
-                title = value;
-                NotifyOfPropertyChange(() => CanSave);
-                NotifyOfPropertyChange(() => Title);
+                SetProperty(ref title, value);
+                save.RaiseCanExecuteChanged();
             }
         }
 
-        public void BackToStart()
+        public async Task Delete()
         {
-            // Remove last note view sequence
-            for (var i = Navigation.BackStack.Count - 1; i >= 0; i--)
-            {
-                if (Navigation.BackStack[i].SourcePageType == Navigation.CurrentSourcePageType)
-                {
-                    Navigation.BackStack.RemoveAt(i);
-                }
-                else
-                {
-                    Close();
-                    break;
-                }
-            }
-        }
+            await database.DeleteAsync(note.Id);
 
-        public override async void CanClose(Action<bool> callback)
-        {
-            // NOTE: If we can't save, we're discarding, but we should probably show a message
-            if (IsEditMode && !IsNew && CanSave)
-            {
-                callback(false);
-                await Save();
-            }
-            else
-            {
-                callback(true);
-            }
-        }
-
-        public async void Delete()
-        {
-            await Database.DeleteAsync(note.Id);
-
-            // Remove any references to this note from back stack
-            // NOTE: I'm not entirely comfortable with this approach, and would prefer to handle in OnInitialize()
-            var id = note.Id.ToString();
-            for (var i = Navigation.BackStack.Count - 1; i >= 0; i--)
-            {
-                // NOTE: some of this code is copied from Caliburn.Micro internals, and probably shouldn't be
-                //       relied upon through updates to that dependency
-                var entry = Navigation.BackStack[i];
-                if (entry.SourcePageType == Navigation.CurrentSourcePageType && entry.Parameter is string && ((string)entry.Parameter).StartsWith("caliburn://"))
-                {
-                    var uri = new Uri((string)entry.Parameter);
-                    if (!string.IsNullOrEmpty(uri.Query) && id == new WwwFormUrlDecoder(uri.Query).GetFirstValueByName("Id"))
-                    {
-                        Navigation.BackStack.RemoveAt(i);
-                    }
-                }
-            }
-
-            // Stop CanClose from preventing navigation
+            // Stop TryGoBack from preventing navigation
             IsEditMode = false;
-            Close();
+
+            navigation.GoBack();
         }
 
-        public async void Discard()
+        public async Task Discard()
         {
             await SetText();
             IsEditMode = false;
@@ -183,78 +139,38 @@ namespace RPGM.Notes.ViewModels
             IsEditMode = true;
         }
 
-        private void Close()
+        public async override void OnNavigatedTo(object navigationParameter, NavigationMode navigationMode, Dictionary<string, object> viewModelState)
         {
-            // If we don't have a back stack, go to main list
-            if (Navigation.CanGoBack)
-            {
-                Navigation.GoBack();
-            }
-            else
-            {
-                Navigation.NavigateToViewModel<MainViewModel>();
-            }
-        }
+            base.OnNavigatedTo(navigationParameter, navigationMode, viewModelState);
 
-        private void HandleBackId()
-        {
-            // Back ID is provided when the prevous page was a new note, so we need to update the back stack entry
-            // so that we return to the note, rather than the 'new note' view
-            if (BackId != null && Navigation.BackStack.Count > 0)
+            // Keep Id property correct
+            if (Id == Guid.Empty && navigationParameter != null)
             {
-                var oldEntry = Navigation.BackStack[Navigation.BackStack.Count - 1];
-                var newEntry = new PageStackEntry(oldEntry.SourcePageType, Navigation.UriFor<NoteViewModel>().WithParam(x => x.Id, BackId.Value).BuildUri().ToString(), oldEntry.NavigationTransitionInfo);
-                Navigation.BackStack.Remove(oldEntry);
-                Navigation.BackStack.Add(newEntry);
-                BackId = null;
+                Guid id;
+                if (Guid.TryParse(navigationParameter.ToString(), out id))
+                {
+                    Id = id;
+                }
             }
-        }
 
-        public void Navigate(Uri uri)
-        {
-            var parts = uri.AbsoluteUri.ToLower().Replace("richtea.rpgm://", string.Empty).Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            var parameter = parts.Length > 1 ? parts[1] : null;
-
-            if (parts[0] == "notes")
+            if (Id != Guid.Empty)
             {
-                Navigation
-                    .UriFor<NoteViewModel>()
-                    .WithParam(x => x.BackId, Id == null ? (Guid?)note.Id : null)
-                    .WithParam(x => x.Id, Guid.Parse(parameter))
-                    .Navigate();
-            }
-            else
-            {
-                // TODO: Throw?
-            }
-        }
+                note = await database.GetAsync(Id);
 
-        protected override async void OnInitialize()
-        {
-            base.OnInitialize();
-
-            if (Id != null)
-            {
-                // TODO: Online advice is that this method can be async void, but Caliburn incorrectly
-                //       thinks we've initialized once we unblock the UI thread
-                note = await Database.GetAsync(Id.Value);
+                if (note == null && navigationMode == NavigationMode.Back)
+                {
+                    // NOTE: This does not work! Cannot navigate again until current navigation finishes
+                    //       Likely we need to notify app to clean entries from back stack
+                    navigation.GoBack();
+                    return;
+                }
             }
             else
             {
                 note = new Note();
             }
 
-            if (note == null)
-            {
-                // NOTE: There are issues with navigation from here being ignored, so we delete the
-                //       back stack entries on note deletion
-                Close();
-                return;
-            }
-
-            NotifyOfPropertyChange(() => CanSave);
-            NotifyOfPropertyChange(() => Title);
-
+            // TODO: I think SetText never has document now, so just set edit mode
             if (IsNew)
             {
                 await SetText(true, false);
@@ -264,13 +180,11 @@ namespace RPGM.Notes.ViewModels
             {
                 await SetText();
             }
-
-            HandleBackId();
         }
 
         public async Task Save()
         {
-            // NOTE: Use property as if not changed the field may be null
+            // Use property as if not changed the field may be null
             note.Title = Title;
 
             if (document != null)
@@ -286,26 +200,23 @@ namespace RPGM.Notes.ViewModels
                 note.RtfContent = rtfContent;
             }
 
-            await Database.SaveAsync(note);
+            await database.SaveAsync(note);
             await SetText(false);
 
             IsEditMode = false;
+            Id = note.Id;
 
-            NotifyOfPropertyChange(() => CanDelete);
-            NotifyOfPropertyChange(() => IsNew);
+            delete.RaiseCanExecuteChanged();
+            OnPropertyChanged(() => IsNew);
         }
 
-        public async Task SetDocument(RichEditBox richEditBox)
+        public async Task SetDocument(ITextDocument document)
         {
-            // NOTE: We'd like to take the ITextDocument directly, and deal with the control
-            //       at the message binder, but it attempts to cast the document on another
-            //       thread, which results in an InvalidCastException.
+            if (this.document != null) throw new InvalidOperationException("Document has already been initialized.");
+            if (document == null) throw new ArgumentNullException("document");
 
-            if (document != null) throw new InvalidOperationException("Document has already been initialized.");
-            if (richEditBox == null) throw new ArgumentNullException("richEditBox");
-
-            document = richEditBox.Document;
             TextFormat = new TextFormatViewModel(document);
+            this.document = document;
 
             await SetText();
         }
@@ -322,13 +233,30 @@ namespace RPGM.Notes.ViewModels
                 document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
             }
 
+            // TODO: Use edit mode instead of parameter?
             if (setLinks)
             {
                 // TODO: Use an alias table
-                var notes = await Database.ListAsync();
+                var notes = await database.ListAsync();
                 var links = notes.Except(new[] { note }).ToDictionary(x => x.Title, x => string.Format("richtea.rpgm://notes/{0}", x.Id));
-                document.AutoHyperlinks(links, AccentColor);
+                var color = (Color)Application.Current.Resources["SystemColorHighlightColor"];
+                document.AutoHyperlinks(links, color);
             }
+        }
+
+        public bool TryGoBack()
+        {
+            // TODO: Trigger a confirmation instead of simply discarding unsaved new notes
+            if (IsEditMode && !IsNew && !string.IsNullOrWhiteSpace(Title))
+            {
+                // NOTE: If we try to synchronously wait for the save to finish we
+                //       block the UI thread return. This means nothing validates it
+                //       completes at all
+                Save();
+                return false;
+            }
+
+            return true;
         }
     }
 }

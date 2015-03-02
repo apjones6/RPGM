@@ -1,9 +1,16 @@
-﻿<Page
-    x:Class="RPGM.Notes.Views.NoteView"
+﻿<s:VisualStateAwarePage
+    x:Name="Page"
+    x:Class="RPGM.Notes.Views.NotePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:a="using:RPGM.Notes.Actions"
     xmlns:c="using:RPGM.Notes.Controls"
-    xmlns:cal="using:Caliburn.Micro"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:p="using:Microsoft.Practices.Prism.Mvvm"
+    xmlns:s="using:Microsoft.Practices.Prism.StoreApps"
+    xmlns:v="using:RPGM.Notes.Views"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    p:ViewModelLocator.AutoWireViewModel="true"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     RequestedTheme="Light">
 
@@ -22,7 +29,11 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Button x:Name="BackToStart" Grid.Row="0" Margin="19,2,0,-9.5" Style="{StaticResource BackButtonStyle}">
+        <Button
+            Grid.Row="0"
+            Command="{Binding GoHomeCommand, ElementName=Page}"
+            Margin="19,2,0,-9.5"
+            Style="{StaticResource BackButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <TextBlock
                     FontFamily="Segoe UI Symbol"
@@ -48,7 +59,6 @@
                 </Grid.RowDefinitions>
 
                 <TextBox
-                    x:Name="Title"
                     x:Uid="TextBoxTitle"
                     ContinuumNavigationTransitionInfo.IsEntranceElement="{Binding IsNotNew}"
                     Grid.Row="0"
@@ -58,6 +68,7 @@
                     Margin="19,0,0,10"
                     PlaceholderText="title"
                     Style="{StaticResource HeaderTextBoxStyle}"
+                    Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     />
                 <Canvas
                     Grid.Row="1"
@@ -68,7 +79,6 @@
                     x:Name="RtfContentBox"
                     x:Uid="TextBoxRtfContent"
                     Grid.Row="1"
-                    cal:Message.Attach="[Event Loaded] = [Action SetDocument($source)]"
                     FontFamily="Segoe UI"
                     IsEnabled="{Binding IsEditMode}"
                     Margin="19,0"
@@ -78,10 +88,14 @@
                     />
                 <c:RichEditBoxLinker
                     Grid.Row="1"
-                    cal:Message.Attach="[Event Navigate] = [Action Navigate($navigateuri)]"
                     IsEnabled="{Binding IsNotEditMode}"
-                    RichEditBox="{Binding ElementName=RtfContentBox}"
-                    />
+                    RichEditBox="{Binding ElementName=RtfContentBox}">
+                    <i:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="Navigate">
+                            <a:NavigateToNoteAction />
+                        </core:EventTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </c:RichEditBoxLinker>
             </Grid>
         </ScrollViewer>
 
@@ -94,15 +108,15 @@
         <CommandBar Visibility="{Binding Path=TextFormat.IsNotOpen, Converter={StaticResource BoolToVisibility}}">
             <CommandBar.PrimaryCommands>
                 <AppBarButton
-                    x:Name="Edit"
                     x:Uid="AppBarEdit"
+                    Command="{Binding EditCommand}"
                     Icon="Edit"
                     Label="edit"
                     Visibility="{Binding IsNotEditMode, Converter={StaticResource BoolToVisibility}}"
                     />
                 <AppBarButton
-                    x:Name="Save"
                     x:Uid="AppBarSave"
+                    Command="{Binding SaveCommand}"
                     Icon="Save"
                     Label="save"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}"
@@ -114,23 +128,23 @@
                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}">
                     <AppBarButton.Flyout>
                         <c:Flyout Closed="OnFlyoutClosed" IsOpen="{Binding Path=TextFormat.IsOpen, Mode=TwoWay}" Placement="Full">
-                            <ContentControl x:Name="TextFormat" />
+                            <v:TextFormatFlyout DataContext="{Binding TextFormat}" />
                         </c:Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
             </CommandBar.PrimaryCommands>
             <CommandBar.SecondaryCommands>
                 <AppBarButton
-                    x:Name="Discard"
                     x:Uid="AppBarDiscard"
+                    Command="{Binding DiscardCommand}"
                     Label="discard changes"
                     />
                 <AppBarButton
-                    x:Name="Delete"
                     x:Uid="AppBarDelete"
+                    Command="{Binding DeleteCommand}"
                     Label="delete"
                     />
             </CommandBar.SecondaryCommands>
         </CommandBar>
     </Page.BottomAppBar>
-</Page>
+</s:VisualStateAwarePage>

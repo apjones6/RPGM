@@ -1,11 +1,11 @@
-<cal:CaliburnApplication
+<p:MvvmAppBase
     x:Class="RPGM.Notes.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:cal="using:Caliburn.Micro"
+    xmlns:p="using:Microsoft.Practices.Prism.Mvvm"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <cal:CaliburnApplication.Resources>
+    <p:MvvmAppBase.Resources>
         <ResourceDictionary Source="Generic.xaml" />
-    </cal:CaliburnApplication.Resources>
+    </p:MvvmAppBase.Resources>
 
-</cal:CaliburnApplication>
+</p:MvvmAppBase>

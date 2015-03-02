@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Practices.Prism.Mvvm;
 using Windows.UI.Text;
 
 namespace RPGM.Notes.ViewModels
@@ -41,8 +42,12 @@ namespace RPGM.Notes.ViewModels
             get { return open; }
             set
             {
-                open = value;
-                Refresh();
+                SetProperty(ref open, value);
+                // TODO: Use reflection (or other) to create a changed event for all properties
+                OnPropertyChanged(() => IsBold);
+                OnPropertyChanged(() => IsItalic);
+                OnPropertyChanged(() => IsNotOpen);
+                OnPropertyChanged(() => IsUnderline);
             }
         }
 

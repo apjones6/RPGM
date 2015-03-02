@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using SQLite.Net;
@@ -17,6 +18,8 @@ namespace RPGM.Notes.Models
         Task SaveAsync(Note note);
     }
 
+    [Export(typeof(IDatabase))]
+    [Shared]
     public sealed class Database : SQLiteAsyncConnection, IDatabase
     {
         private static readonly Lazy<RPGMConnection> connection = new Lazy<RPGMConnection>(() => new RPGMConnection());
