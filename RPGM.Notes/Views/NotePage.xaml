@@ -60,7 +60,7 @@
 
                 <TextBox
                     x:Uid="TextBoxTitle"
-                    ContinuumNavigationTransitionInfo.IsEntranceElement="{Binding IsNotNew}"
+                    ContinuumNavigationTransitionInfo.IsEntranceElement="{Binding IsNew, Converter={StaticResource BoolNegate}}"
                     Grid.Row="0"
                     FontSize="42"
                     FontWeight="ExtraBlack"
@@ -88,7 +88,7 @@
                     />
                 <c:RichEditBoxLinker
                     Grid.Row="1"
-                    IsEnabled="{Binding IsNotEditMode}"
+                    IsEnabled="{Binding IsEditMode, Converter={StaticResource BoolNegate}}"
                     RichEditBox="{Binding ElementName=RtfContentBox}">
                     <i:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="Navigate">
@@ -112,7 +112,7 @@
                     Command="{Binding EditCommand}"
                     Icon="Edit"
                     Label="edit"
-                    Visibility="{Binding IsNotEditMode, Converter={StaticResource BoolToVisibility}}"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToInvisibility}}"
                     />
                 <AppBarButton
                     x:Uid="AppBarSave"

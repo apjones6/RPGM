@@ -229,7 +229,9 @@
             </Style>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-    
+
+    <c:BooleanNegateConverter x:Key="BoolNegate" />
+    <c:BooleanToInvisibilityConverter x:Key="BoolToInvisibility" />
     <c:BooleanToSelectionModeConverter x:Key="BoolToSelectionMode" />
     <c:BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     <c:ObjectPropertyConverter x:Key="ObjectPropertyConverter" />

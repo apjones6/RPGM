@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.Mvvm.Interfaces;
-using RPGM.Notes.Extensions;
 using RPGM.Notes.Models;
 using RPGM.Notes.ViewModels;
 using Windows.ApplicationModel.Activation;
@@ -17,7 +16,7 @@ namespace RPGM.Notes
 {
     public sealed partial class App : MvvmAppBase
     {
-        private static readonly Regex VIEW_TO_VIEWMODEL = new Regex("\\.Views\\.([a-zA-Z0-9_]+)Page,");
+        private static readonly Regex VIEW_TO_VIEWMODEL = new Regex(@"\.Views\.([a-zA-Z0-9_]+)Page,");
 
         private CompositionHost container;
 
@@ -50,7 +49,7 @@ namespace RPGM.Notes
         {
             container = new ContainerConfiguration()
                 .WithAssembly(typeof(App).GetTypeInfo().Assembly)
-                .WithProvider(new InstanceExportDescriptorProvider<INavigationService>(NavigationService))
+                .WithInstance<INavigationService>(NavigationService)
                 .CreateContainer();
 
             ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(ViewTypeToViewModelTypeResolver);

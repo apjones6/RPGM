@@ -44,11 +44,6 @@ namespace RPGM.Notes.ViewModels
             get { return deleteSelected; }
         }
 
-        public bool IsNotSelectMode
-        {
-            get { return !selectMode; }
-        }
-
         public bool IsSelectMode
         {
             get { return selectMode; }
@@ -56,7 +51,6 @@ namespace RPGM.Notes.ViewModels
             {
                 SetProperty(ref selectMode, value);
                 deleteSelected.RaiseCanExecuteChanged();
-                OnPropertyChanged(() => IsNotSelectMode);
             }
         }
 

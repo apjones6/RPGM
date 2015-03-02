@@ -19,6 +19,8 @@ namespace RPGM.Notes.ViewModels
     [Export]
     public class NoteViewModel : ViewModel, IBackNavigationAware
     {
+        private static readonly Regex RTF_TRAILING_NEWLINES = new Regex(@"(\r|\n|\\par|\\pard|\\ltrpar|\\tx\d+|\\fs\d+)*}(\r|\n|\0)*$", RegexOptions.IgnoreCase);
+
         private readonly IDatabase database;
         private readonly DelegateCommandBase delete;
         private readonly DelegateCommandBase discard;
@@ -72,23 +74,12 @@ namespace RPGM.Notes.ViewModels
                 SetProperty(ref isEditMode, value);
                 discard.RaiseCanExecuteChanged();
                 save.RaiseCanExecuteChanged();
-                OnPropertyChanged(() => IsNotEditMode);
             }
         }
 
         public bool IsNew
         {
             get { return note != null && note.Id == Guid.Empty; }
-        }
-
-        public bool IsNotEditMode
-        {
-            get { return !isEditMode; }
-        }
-
-        public bool IsNotNew
-        {
-            get { return note == null || note.Id != Guid.Empty; }
         }
 
         public ICommand SaveCommand
@@ -153,6 +144,7 @@ namespace RPGM.Notes.ViewModels
                 }
             }
 
+            // Load the note, or prepare a new note
             if (Id != Guid.Empty)
             {
                 note = await database.GetAsync(Id);
@@ -194,8 +186,7 @@ namespace RPGM.Notes.ViewModels
 
                 // The UI control appends newlines, so we remove them
                 // NOTE: We may add a single newline in edit mode, to simplify adding new content
-                var regex = new Regex(@"(\r|\n|\\par|\\pard|\\ltrpar|\\tx\d+|\\fs\d+)*}(\r|\n|\0)*$", RegexOptions.IgnoreCase);
-                rtfContent = regex.Replace(rtfContent, "}\r\n\0");
+                rtfContent = RTF_TRAILING_NEWLINES.Replace(rtfContent, "}\r\n\0");
 
                 note.RtfContent = rtfContent;
             }

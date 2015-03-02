@@ -118,13 +118,13 @@
                     Command="{Binding NewCommand}"
                     Icon="Add"
                     Label="new"
-                    Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}"
+                    Visibility="{Binding IsSelectMode, Converter={StaticResource BoolToInvisibility}}"
                     />
                 <AppBarButton
                     x:Uid="AppBarSelect"
                     Command="{Binding SelectCommand}"
                     Label="select"
-                    Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}">
+                    Visibility="{Binding IsSelectMode, Converter={StaticResource BoolToInvisibility}}">
                     <AppBarButton.Icon>
                         <!-- Same glyph as for Icon="Bullets", but that doesn't work in WP8.1 at present -->
                         <FontIcon FontFamily="Segoe UI Symbol" Glyph="&#xE133;" />

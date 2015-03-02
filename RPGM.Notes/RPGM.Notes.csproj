@@ -91,11 +91,13 @@
     <Compile Include="Controls\Flyout.cs" />
     <Compile Include="Controls\OcclusionPlaceholder.cs" />
     <Compile Include="Controls\RichEditBoxLinker.cs" />
+    <Compile Include="Converters\BooleanNegateConverter.cs" />
+    <Compile Include="Converters\BooleanToInvisibilityConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\BooleanToSelectionModeConverter.cs" />
     <Compile Include="Converters\ObjectPropertyConverter.cs" />
     <Compile Include="Converters\TimeAgoConverter.cs" />
-    <Compile Include="Extensions\InstanceExportDescriptorProvider.cs" />
+    <Compile Include="Extensions\ContainerConfigurationExtensions.cs" />
     <Compile Include="Extensions\ITextDocumentExtensions.cs" />
     <Compile Include="Models\Database.cs" />
     <Compile Include="Models\Note.cs" />
