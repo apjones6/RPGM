@@ -107,6 +107,9 @@
                         />
                 </core:EventTriggerBehavior>
             </i:Interaction.Behaviors>
+            <ListView.Footer>
+                <Canvas Height="65" />
+            </ListView.Footer>
         </ListView>
     </Grid>
     
