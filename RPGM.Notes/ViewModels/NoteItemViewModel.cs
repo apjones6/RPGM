@@ -13,8 +13,10 @@ namespace RPGM.Notes.ViewModels
         private readonly IDatabase database;
         private readonly ICommand delete;
         private readonly INavigationService navigation;
-        private readonly Note note;
         private readonly ICommand view;
+
+        private DateTimeOffset dateModified;
+        private string title;
 
         public NoteItemViewModel(Note note, IDatabase database, INavigationService navigation)
         {
@@ -23,15 +25,18 @@ namespace RPGM.Notes.ViewModels
             if (navigation == null) throw new ArgumentNullException("navigation");
 
             this.database = database;
+            this.dateModified = note.DateModified;
             this.delete = DelegateCommand.FromAsyncHandler(Delete);
+            this.Id = note.Id;
             this.navigation = navigation;
-            this.note = note;
+            this.title = note.Title;
             this.view = new DelegateCommand(View);
         }
 
         public DateTimeOffset DateModified
         {
-            get { return note.DateModified; }
+            get { return dateModified; }
+            set { SetProperty(ref dateModified, value); }
         }
 
         public ICommand DeleteCommand
@@ -39,14 +44,12 @@ namespace RPGM.Notes.ViewModels
             get { return delete; }
         }
 
-        public Guid Id
-        {
-            get { return note.Id; }
-        }
+        public Guid Id { get; private set; }
 
         public string Title
         {
-            get { return note.Title; }
+            get { return title; }
+            set { SetProperty(ref title, value); }
         }
 
         public ICommand ViewCommand
@@ -56,13 +59,13 @@ namespace RPGM.Notes.ViewModels
 
         public async Task Delete()
         {
-            await database.DeleteAsync(note.Id);
+            await database.DeleteAsync(Id);
             // TODO: event aggregator
         }
 
         public void View()
         {
-            navigation.Navigate("Note", note.Id);
+            navigation.Navigate("Note", Id);
         }
     }
 }

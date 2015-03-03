@@ -64,7 +64,7 @@ namespace RPGM.Notes.ViewModels
         }
 
         [RestorableState]
-        public Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
         public bool IsEditMode
         {

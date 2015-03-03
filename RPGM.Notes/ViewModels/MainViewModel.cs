@@ -105,11 +105,36 @@ namespace RPGM.Notes.ViewModels
         {
             base.OnNavigatedTo(navigationParameter, navigationMode, viewModelState);
 
-            // TODO: Maintain as many items as we can, as the associated views are used by continuum transitions
-            notes.Clear();
+            var i = 0;
             foreach (var note in await database.ListAsync())
             {
-                notes.Add(new NoteItemViewModel(note, database, navigation));
+                // Create or update item
+                var item = this.notes.FirstOrDefault(x => x.Id == note.Id);
+                if (item == null)
+                {
+                    item = new NoteItemViewModel(note, database, navigation);
+                    notes.Insert(i, item);
+                }
+                else
+                {
+                    item.DateModified = note.DateModified;
+                    item.Title = note.Title;
+
+                    // Move if necessary
+                    var index = notes.IndexOf(item);
+                    if (index != i)
+                    {
+                        notes.Move(index, i);
+                    }
+                }
+
+                i++;
+            }
+
+            // Remove any other items in the collection
+            while (notes.Count > i)
+            {
+                notes.RemoveAt(i);
             }
         }
 
