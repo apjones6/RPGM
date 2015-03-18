@@ -10,7 +10,7 @@
     xmlns:s="using:Microsoft.Practices.Prism.StoreApps"
     xmlns:v="using:RPGM.Notes.Views"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    p:ViewModelLocator.AutoWireViewModel="true"
+    p:ViewModelLocator.AutoWireViewModel="True"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     RequestedTheme="Light">
 

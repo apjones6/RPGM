@@ -8,6 +8,7 @@ using System.Windows.Input;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.Mvvm.Interfaces;
+using Microsoft.Practices.Prism.PubSubEvents;
 using RPGM.Notes.Models;
 using Windows.UI;
 using Windows.UI.Text;
@@ -22,6 +23,7 @@ namespace RPGM.Notes.ViewModels
         private static readonly Regex RTF_TRAILING_NEWLINES = new Regex(@"(\r|\n|\\par|\\pard|\\ltrpar|\\tx\d+|\\fs\d+)*}(\r|\n|\0)*$", RegexOptions.IgnoreCase);
 
         private readonly IDatabase database;
+        private readonly IEventAggregator eventAggregator;
         private readonly DelegateCommandBase delete;
         private readonly DelegateCommandBase discard;
         private readonly ICommand edit;
@@ -33,17 +35,20 @@ namespace RPGM.Notes.ViewModels
         private Note note;
         private TextFormatViewModel textFormat;
         private string title;
+        private SubscriptionToken token;
 
         [ImportingConstructor]
-        public NoteViewModel(IDatabase database, INavigationService navigation)
+        public NoteViewModel(IDatabase database, IEventAggregator eventAggregator, INavigationService navigation)
         {
             if (database == null) throw new ArgumentNullException("database");
+            if (eventAggregator == null) throw new ArgumentNullException("eventAggregator");
             if (navigation == null) throw new ArgumentNullException("navigation");
 
             this.database = database;
             this.delete = DelegateCommand.FromAsyncHandler(Delete, () => !IsNew);
-            this.discard = DelegateCommand.FromAsyncHandler(Discard, () => IsEditMode && !IsNew);
+            this.discard = new DelegateCommand(Discard, () => IsEditMode && !IsNew);
             this.edit = new DelegateCommand(Edit);
+            this.eventAggregator = eventAggregator;
             this.navigation = navigation;
             this.save = DelegateCommand.FromAsyncHandler(Save, () => !string.IsNullOrWhiteSpace(Title));
         }
@@ -113,11 +118,12 @@ namespace RPGM.Notes.ViewModels
             navigation.GoBack();
         }
 
-        public async Task Discard()
+        public void Discard()
         {
-            await SetText();
             IsEditMode = false;
             Title = null;
+
+            OnTextChanged();
         }
 
         public void Edit()
@@ -128,6 +134,17 @@ namespace RPGM.Notes.ViewModels
             }
 
             IsEditMode = true;
+        }
+
+        public override void OnNavigatedFrom(Dictionary<string, object> viewModelState, bool suspending)
+        {
+            base.OnNavigatedFrom(viewModelState, suspending);
+
+            if (token != null)
+            {
+                this.eventAggregator.GetEvent<SetTextEvent>().Unsubscribe(token);
+                this.token = null;
+            }
         }
 
         public async override void OnNavigatedTo(object navigationParameter, NavigationMode navigationMode, Dictionary<string, object> viewModelState)
@@ -160,18 +177,16 @@ namespace RPGM.Notes.ViewModels
             else
             {
                 note = new Note();
-            }
-
-            // TODO: I think SetText never has document now, so just set edit mode
-            if (IsNew)
-            {
-                await SetText(true, false);
                 IsEditMode = true;
             }
-            else
-            {
-                await SetText();
-            }
+
+            this.token = eventAggregator.GetEvent<SetTextEvent>().Subscribe(SetTextAsync, ThreadOption.UIThread);
+            OnPropertyChanged(() => Title);
+        }
+
+        private void OnTextChanged(bool setText = true)
+        {
+            eventAggregator.GetEvent<SetTextEvent>().Publish(setText);
         }
 
         public async Task Save()
@@ -192,7 +207,7 @@ namespace RPGM.Notes.ViewModels
             }
 
             await database.SaveAsync(note);
-            await SetText(false);
+            OnTextChanged(false);
 
             IsEditMode = false;
             Id = note.Id;
@@ -201,7 +216,7 @@ namespace RPGM.Notes.ViewModels
             OnPropertyChanged(() => IsNew);
         }
 
-        public async Task SetDocument(ITextDocument document)
+        public void SetDocument(ITextDocument document)
         {
             if (this.document != null) throw new InvalidOperationException("Document has already been initialized.");
             if (document == null) throw new ArgumentNullException("document");
@@ -209,10 +224,10 @@ namespace RPGM.Notes.ViewModels
             TextFormat = new TextFormatViewModel(document);
             this.document = document;
 
-            await SetText();
+            OnTextChanged();
         }
 
-        private async Task SetText(bool setText = true, bool setLinks = true)
+        private async void SetTextAsync(bool setText)
         {
             if (document == null || note == null || string.IsNullOrEmpty(note.RtfContent))
             {
@@ -224,8 +239,7 @@ namespace RPGM.Notes.ViewModels
                 document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
             }
 
-            // TODO: Use edit mode instead of parameter?
-            if (setLinks)
+            if (!isEditMode)
             {
                 // TODO: Use an alias table
                 var notes = await database.ListAsync();
@@ -248,6 +262,10 @@ namespace RPGM.Notes.ViewModels
             }
 
             return true;
+        }
+
+        private class SetTextEvent : PubSubEvent<bool>
+        {
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Practices.Prism.StoreApps;
 using Windows.UI.ViewManagement;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.Views
@@ -8,14 +9,14 @@ namespace RPGM.Notes.Views
     {
         public MainPage()
         {
-            this.NavigationCacheMode = NavigationCacheMode.Required;
             this.InitializeComponent();
+            this.NavigationCacheMode = NavigationCacheMode.Required;
+            this.Loaded += OnLoaded;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             StatusBar.GetForCurrentView().ForegroundColor = null;
-            base.OnNavigatedTo(e);
         }
     }
 }

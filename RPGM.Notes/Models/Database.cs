@@ -25,7 +25,7 @@ namespace RPGM.Notes.Models
         private static readonly Lazy<RPGMConnection> connection = new Lazy<RPGMConnection>(() => new RPGMConnection());
         private readonly IDictionary<Guid, Note> cache = new Dictionary<Guid, Note>();
 
-        private bool initialized;
+        private bool isInitialized;
 
         public Database()
             : base(() => connection.Value)
@@ -49,16 +49,16 @@ namespace RPGM.Notes.Models
 
         public async Task<Note> GetAsync(Guid id)
         {
-            return initialized ? (cache.ContainsKey(id) ? cache[id] : null) : await FindAsync<Note>(id).ConfigureAwait(false);
+            return isInitialized ? (cache.ContainsKey(id) ? cache[id] : null) : await FindAsync<Note>(id).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Note>> ListAsync()
         {
             // TODO: Find a Linq way to exclude RtfContent (and other unnecessary properties)
             // TODO: Consider direct SQL until above
-            if (!initialized)
+            if (!isInitialized)
             {
-                initialized = true;
+                isInitialized = true;
                 foreach (var note in await Table<Note>().ToListAsync().ConfigureAwait(false))
                 {
                     cache.Add(note.Id, note);

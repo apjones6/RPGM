@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.Mvvm.Interfaces;
+using Microsoft.Practices.Prism.PubSubEvents;
 using RPGM.Notes.Models;
 using RPGM.Notes.ViewModels;
 using Windows.ApplicationModel.Activation;
@@ -49,6 +50,7 @@ namespace RPGM.Notes
         {
             container = new ContainerConfiguration()
                 .WithAssembly(typeof(App).GetTypeInfo().Assembly)
+                .WithInstance<IEventAggregator>(new EventAggregator())
                 .WithInstance<INavigationService>(NavigationService)
                 .CreateContainer();
 

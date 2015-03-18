@@ -7,7 +7,6 @@ using Windows.UI.Text;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.Views
 {
@@ -19,8 +18,10 @@ namespace RPGM.Notes.Views
 
         public NotePage()
         {
+            // NOTE: We can't cache this page for a couple reasons, but a key one is that it prevents continuum transitions
             this.goHome = new DelegateCommand(() => GoHome(null, null));
             this.InitializeComponent();
+            this.Loaded += OnLoaded;
         }
 
         public ICommand GoHomeCommand
@@ -44,15 +45,13 @@ namespace RPGM.Notes.Views
             RtfContentBox.Focus(FocusState.Programmatic);
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             StatusBar.GetForCurrentView().ForegroundColor = COLOR_BLACK;
-            base.OnNavigatedTo(e);
-
             var vm = DataContext as NoteViewModel;
             if (vm != null)
             {
-                await vm.SetDocument(RtfContentBox.Document);
+                vm.SetDocument(RtfContentBox.Document);
             }
         }
     }
