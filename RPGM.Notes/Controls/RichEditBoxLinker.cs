@@ -42,16 +42,9 @@ namespace RPGM.Notes.Controls
         private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Uses screen coordinates, as I had some inconsistency converting between control relative coordinates
-            var position = e.GetPosition(null);
-            var range = RichEditBox.Document.GetRangeFromPoint(position, PointOptions.None);
-            range.StartOf(TextRangeUnit.Link, true);
-
-            if (!string.IsNullOrEmpty(range.Link))
+            var uri = RichEditBox.Document.GetLinkFromPoint(e.GetPosition(null), PointOptions.None);
+            if (uri != null)
             {
-                // Trim wrapping quotes
-                // TODO: Robustness
-                var uri = new Uri(range.Link.Substring(1, range.Link.Length - 2));
-                
                 // Dispatch event if any listeners, else launch normally
                 if (Navigate != null)
                 {

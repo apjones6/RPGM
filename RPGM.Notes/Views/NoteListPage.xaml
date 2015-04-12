@@ -1,31 +1,39 @@
-﻿<Page
-    x:Class="RPGM.Notes.Views.MainView"
+﻿<s:VisualStateAwarePage
+    x:Name="Page"
+    x:Class="RPGM.Notes.Views.NoteListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:a="using:RPGM.Notes.Actions"
-    xmlns:cal="using:Caliburn.Micro"
+    xmlns:c="using:RPGM.Notes.Converters"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:p="using:Microsoft.Practices.Prism.Mvvm"
+    xmlns:s="using:Microsoft.Practices.Prism.StoreApps"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    p:ViewModelLocator.AutoWireViewModel="True"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     RequestedTheme="Default">
-    
+
     <Page.Resources>
+        <c:BooleanToSelectionModeConverter x:Key="BoolToSelectionMode" />
+        <c:ObjectPropertyConverter x:Key="ObjectPropertyConverter" />
+        <c:TimeAgoConverter x:Key="TimeAgoConverter" />
         <DataTemplate x:Key="ItemTemplate">
-            <StackPanel cal:Message.Attach="[Event Tapped] = [Action View($datacontext)]">
+            <StackPanel>
                 <i:Interaction.Behaviors>
                     <!-- RightTapped is recommended, but it doesn't occur until user releases -->
                     <core:EventTriggerBehavior EventName="Holding">
                         <a:OpenFlyoutAction />
                     </core:EventTriggerBehavior>
+                    <core:EventTriggerBehavior EventName="Tapped">
+                        <core:InvokeCommandAction Command="{Binding ViewCommand}" />
+                    </core:EventTriggerBehavior>
                 </i:Interaction.Behaviors>
 
                 <FlyoutBase.AttachedFlyout>
                     <MenuFlyout>
-                        <!-- We must break out of the flyout visual tree -->
                         <MenuFlyoutItem
                             x:Uid="DeleteButton"
-                            cal:Action.TargetWithoutContext="{Binding DataContext, ElementName=NotesListView}"
-                            cal:Message.Attach="Delete($datacontext)"
+                            Command="{Binding DeleteCommand}"
                             Text="delete"
                             />
                     </MenuFlyout>
@@ -38,7 +46,7 @@
                     />
                 <TextBlock
                     Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}"
-                    Text="{Binding DateModified, Converter={StaticResource TimeAgoConverter}}"
+                    Text="{Binding Path=Note.DateModified, Converter={StaticResource TimeAgoConverter}}"
                     />
             </StackPanel>
         </DataTemplate>
@@ -102,6 +110,9 @@
                         />
                 </core:EventTriggerBehavior>
             </i:Interaction.Behaviors>
+            <ListView.Footer>
+                <Canvas Height="65" />
+            </ListView.Footer>
         </ListView>
     </Grid>
     
@@ -109,25 +120,25 @@
         <CommandBar>
             <CommandBar.PrimaryCommands>
                 <AppBarButton
-                    x:Name="New"
                     x:Uid="AppBarNew"
+                    Command="{Binding NewCommand}"
                     Icon="Add"
                     Label="new"
-                    Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}"
+                    Visibility="{Binding IsSelectMode, Converter={StaticResource BoolToInvisibility}}"
                     />
                 <AppBarButton
-                    x:Name="Select"
                     x:Uid="AppBarSelect"
+                    Command="{Binding SelectCommand}"
                     Label="select"
-                    Visibility="{Binding IsNotSelectMode, Converter={StaticResource BoolToVisibility}}">
+                    Visibility="{Binding IsSelectMode, Converter={StaticResource BoolToInvisibility}}">
                     <AppBarButton.Icon>
                         <!-- Same glyph as for Icon="Bullets", but that doesn't work in WP8.1 at present -->
                         <FontIcon FontFamily="Segoe UI Symbol" Glyph="&#xE133;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <AppBarButton
-                    x:Name="DeleteSelected"
                     x:Uid="AppBarDelete"
+                    Command="{Binding DeleteSelectedCommand}"
                     Icon="Delete"
                     Label="delete"
                     Visibility="{Binding IsSelectMode, Converter={StaticResource BoolToVisibility}}"
@@ -135,4 +146,4 @@
             </CommandBar.PrimaryCommands>
         </CommandBar>
     </Page.BottomAppBar>
-</Page>
+</s:VisualStateAwarePage>

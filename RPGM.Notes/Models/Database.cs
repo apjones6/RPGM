@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Practices.Prism.PubSubEvents;
 using SQLite.Net;
 using SQLite.Net.Async;
 using SQLite.Net.Platform.WinRT;
@@ -17,22 +19,31 @@ namespace RPGM.Notes.Models
         Task SaveAsync(Note note);
     }
 
+    [Export(typeof(IDatabase))]
+    [Shared]
     public sealed class Database : SQLiteAsyncConnection, IDatabase
     {
         private static readonly Lazy<RPGMConnection> connection = new Lazy<RPGMConnection>(() => new RPGMConnection());
+
         private readonly IDictionary<Guid, Note> cache = new Dictionary<Guid, Note>();
+        private readonly IEventAggregator eventAggregator;
 
-        private bool initialized;
+        private bool isInitialized;
 
-        public Database()
+        [ImportingConstructor]
+        public Database(IEventAggregator eventAggregator)
             : base(() => connection.Value)
         {
+            if (eventAggregator == null) throw new ArgumentNullException("eventAggregator");
+            this.eventAggregator = eventAggregator;
         }
 
         public async Task DeleteAsync(Guid id)
         {
             await DeleteAsync<Note>(id).ConfigureAwait(false);
             cache.Remove(id);
+
+            eventAggregator.GetEvent<DeleteEvent>().Publish(new[] { id });
         }
 
         public async Task DeleteAsync(IEnumerable<Guid> ids)
@@ -42,20 +53,22 @@ namespace RPGM.Notes.Models
                 await DeleteAsync<Note>(id).ConfigureAwait(false);
                 cache.Remove(id);
             }
+
+            eventAggregator.GetEvent<DeleteEvent>().Publish(ids);
         }
 
         public async Task<Note> GetAsync(Guid id)
         {
-            return initialized ? (cache.ContainsKey(id) ? cache[id] : null) : await FindAsync<Note>(id).ConfigureAwait(false);
+            return isInitialized ? (cache.ContainsKey(id) ? cache[id] : null) : await FindAsync<Note>(id).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Note>> ListAsync()
         {
             // TODO: Find a Linq way to exclude RtfContent (and other unnecessary properties)
             // TODO: Consider direct SQL until above
-            if (!initialized)
+            if (!isInitialized)
             {
-                initialized = true;
+                isInitialized = true;
                 foreach (var note in await Table<Note>().ToListAsync().ConfigureAwait(false))
                 {
                     cache.Add(note.Id, note);
@@ -87,5 +100,9 @@ namespace RPGM.Notes.Models
                 CreateTable<Note>();
             }
         }
+    }
+
+    public class DeleteEvent : PubSubEvent<IEnumerable<Guid>>
+    {
     }
 }
