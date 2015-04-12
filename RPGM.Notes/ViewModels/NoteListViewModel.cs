@@ -8,32 +8,36 @@ using System.Windows.Input;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.Mvvm.Interfaces;
+using Microsoft.Practices.Prism.PubSubEvents;
 using RPGM.Notes.Models;
 using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.ViewModels
 {
     [Export]
-    public class MainViewModel : ViewModel, IBackNavigationAware
+    public class NoteListViewModel : ViewModel, IBackNavigationAware
     {
         private readonly IDatabase database;
         private readonly DelegateCommandBase deleteSelected;
+        private readonly IEventAggregator eventAggregator;
         private readonly INavigationService navigation;
         private readonly ICommand @new;
-        private readonly ObservableCollection<NoteItemViewModel> notes = new ObservableCollection<NoteItemViewModel>();
+        private readonly ObservableCollection<NoteViewModel> notes = new ObservableCollection<NoteViewModel>();
         private readonly ICommand select;
 
-        private IList<NoteItemViewModel> selectedItems;
+        private IList<NoteViewModel> selectedItems;
         private bool selectMode;
 
         [ImportingConstructor]
-        public MainViewModel(IDatabase database, INavigationService navigation)
+        public NoteListViewModel(IDatabase database, IEventAggregator eventAggregator, INavigationService navigation)
         {
             if (database == null) throw new ArgumentNullException("database");
+            if (eventAggregator == null) throw new ArgumentNullException("eventAggregator");
             if (navigation == null) throw new ArgumentNullException("navigation");
 
             this.database = database;
             this.deleteSelected = DelegateCommand.FromAsyncHandler(DeleteSelected, () => selectedItems != null && selectedItems.Count > 0);
+            this.eventAggregator = eventAggregator;
             this.@new = new DelegateCommand(New);
             this.navigation = navigation;
             this.select = new DelegateCommand(Select);
@@ -59,7 +63,7 @@ namespace RPGM.Notes.ViewModels
             get { return @new; }
         }
 
-        public ObservableCollection<NoteItemViewModel> Notes
+        public ObservableCollection<NoteViewModel> Notes
         {
             get { return notes; }
         }
@@ -75,7 +79,7 @@ namespace RPGM.Notes.ViewModels
             set
             {
                 // Only works with object property
-                SetProperty(ref selectedItems, ((IList<object>)value).Cast<NoteItemViewModel>().ToArray());
+                SetProperty(ref selectedItems, ((IList<object>)value).Cast<NoteViewModel>().ToArray());
 
                 // Deselect all items cancels multiple selection mode
                 IsSelectMode = selectedItems.Count > 0;
@@ -85,11 +89,7 @@ namespace RPGM.Notes.ViewModels
         public async Task DeleteSelected()
         {
             var ids = selectedItems.Select(x => x.Id).ToArray();
-            foreach (var item in selectedItems)
-            {
-                notes.Remove(item);
-            }
-
+            
             // This triggers UI to empty SelectedItems property
             IsSelectMode = false;
 
@@ -99,6 +99,25 @@ namespace RPGM.Notes.ViewModels
         public void New()
         {
             navigation.Navigate("Note", null);
+        }
+
+        private void OnDelete(IEnumerable<Guid> ids)
+        {
+            foreach (var id in ids)
+            {
+                var note = notes.FirstOrDefault(x => x.Id == id);
+                if (note != null)
+                {
+                    notes.Remove(note);
+                }
+            }
+        }
+
+        public override void OnNavigatedFrom(Dictionary<string, object> viewModelState, bool suspending)
+        {
+            base.OnNavigatedFrom(viewModelState, suspending);
+
+            eventAggregator.GetEvent<DeleteEvent>().Unsubscribe(OnDelete);
         }
 
         public override async void OnNavigatedTo(object navigationParameter, NavigationMode navigationMode, Dictionary<string, object> viewModelState)
@@ -112,13 +131,13 @@ namespace RPGM.Notes.ViewModels
                 var item = this.notes.FirstOrDefault(x => x.Id == note.Id);
                 if (item == null)
                 {
-                    item = new NoteItemViewModel(note, database, navigation);
+                    item = new NoteViewModel(note, database, eventAggregator, navigation);
                     notes.Insert(i, item);
                 }
                 else
                 {
-                    item.DateModified = note.DateModified;
-                    item.Title = note.Title;
+                    item.Note.DateModified = note.DateModified;
+                    item.Note.Title = note.Title;
 
                     // Move if necessary
                     var index = notes.IndexOf(item);
@@ -130,6 +149,8 @@ namespace RPGM.Notes.ViewModels
 
                 i++;
             }
+
+            eventAggregator.GetEvent<DeleteEvent>().Subscribe(OnDelete, ThreadOption.UIThread);
 
             // Remove any other items in the collection
             while (notes.Count > i)

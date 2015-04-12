@@ -7,6 +7,7 @@ using Windows.UI.Text;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.Views
 {
@@ -21,7 +22,6 @@ namespace RPGM.Notes.Views
             // NOTE: We can't cache this page for a couple reasons, but a key one is that it prevents continuum transitions
             this.goHome = new DelegateCommand(() => GoHome(null, null));
             this.InitializeComponent();
-            this.Loaded += OnLoaded;
         }
 
         public ICommand GoHomeCommand
@@ -47,12 +47,36 @@ namespace RPGM.Notes.Views
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            this.Loaded -= OnLoaded;
             StatusBar.GetForCurrentView().ForegroundColor = COLOR_BLACK;
-            var vm = DataContext as NoteViewModel;
-            if (vm != null)
+            if (DataContext is IDocumentAware)
             {
-                vm.SetDocument(RtfContentBox.Document);
+                ((IDocumentAware)DataContext).SetDocument(RtfContentBox.Document);
             }
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            var pane = InputPane.GetForCurrentView();
+            pane.Showing -= OnOccludedRectUpdate;
+            pane.Hiding -= OnOccludedRectUpdate;
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            var pane = InputPane.GetForCurrentView();
+            pane.Showing += OnOccludedRectUpdate;
+            pane.Hiding += OnOccludedRectUpdate;
+            Loaded += OnLoaded;
+        }
+
+        private void OnOccludedRectUpdate(InputPane sender, InputPaneVisibilityEventArgs e)
+        {
+            ScrollViewer.Margin = new Thickness(0, 0, 0, e.OccludedRect.Height);
         }
     }
 }

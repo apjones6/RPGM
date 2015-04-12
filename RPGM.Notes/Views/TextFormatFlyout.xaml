@@ -1,17 +1,17 @@
-﻿<UserControl
+﻿<Flyout
     x:Class="RPGM.Notes.Views.TextFormatFlyout"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
-    <UserControl.Resources>
-        <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
-            <Setter Property="Margin" Value="0,0,14,0" />
-            <Setter Property="MinHeight" Value="70" />
-            <Setter Property="MinWidth" Value="70" />
-        </Style>
-    </UserControl.Resources>
-    
     <StackPanel Margin="19,30,19,19">
+        <StackPanel.Resources>
+            <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
+                <Setter Property="Margin" Value="0,0,14,0" />
+                <Setter Property="MinHeight" Value="70" />
+                <Setter Property="MinWidth" Value="70" />
+            </Style>
+        </StackPanel.Resources>
+    
         <TextBlock
             x:Uid="FormatTitle"
             Style="{StaticResource BodyTextBlockStyle}"
@@ -29,4 +29,4 @@
             </ToggleButton>
         </GridView>
     </StackPanel>
-</UserControl>
+</Flyout>

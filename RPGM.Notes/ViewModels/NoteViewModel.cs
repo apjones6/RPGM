@@ -18,24 +18,26 @@ using Windows.UI.Xaml.Navigation;
 namespace RPGM.Notes.ViewModels
 {
     [Export]
-    public class NoteViewModel : ViewModel, IBackNavigationAware
+    public class NoteViewModel : ViewModel, IBackNavigationAware, IDocumentAware
     {
         private static readonly Regex RTF_TRAILING_NEWLINES = new Regex(@"(\r|\n|\\par|\\pard|\\ltrpar|\\tx\d+|\\fs\d+)*}(\r|\n|\0)*$", RegexOptions.IgnoreCase);
 
         private readonly IDatabase database;
-        private readonly IEventAggregator eventAggregator;
         private readonly DelegateCommandBase delete;
         private readonly DelegateCommandBase discard;
         private readonly ICommand edit;
+        private readonly IEventAggregator eventAggregator;
         private readonly INavigationService navigation;
         private readonly DelegateCommandBase save;
+        private readonly ICommand view;
 
         private ITextDocument document;
+        private Guid id;
         private bool isEditMode;
+        private bool isPage;
         private Note note;
         private TextFormatViewModel textFormat;
         private string title;
-        private SubscriptionToken token;
 
         [ImportingConstructor]
         public NoteViewModel(IDatabase database, IEventAggregator eventAggregator, INavigationService navigation)
@@ -51,6 +53,16 @@ namespace RPGM.Notes.ViewModels
             this.eventAggregator = eventAggregator;
             this.navigation = navigation;
             this.save = DelegateCommand.FromAsyncHandler(Save, () => !string.IsNullOrWhiteSpace(Title));
+            this.view = new DelegateCommand(View);
+        }
+
+        public NoteViewModel(Note note, IDatabase database, IEventAggregator eventAggregator, INavigationService navigation)
+            : this(database, eventAggregator, navigation)
+        {
+            if (note == null) throw new ArgumentNullException("note");
+
+            this.id = note.Id;
+            this.note = note;
         }
 
         public ICommand DeleteCommand
@@ -69,7 +81,16 @@ namespace RPGM.Notes.ViewModels
         }
 
         [RestorableState]
-        public Guid Id { get; private set; }
+        public Guid Id
+        {
+            get { return id; }
+            set
+            {
+                SetProperty(ref id, value);
+                delete.RaiseCanExecuteChanged();
+                OnPropertyChanged(() => IsNew);
+            }
+        }
 
         public bool IsEditMode
         {
@@ -85,6 +106,11 @@ namespace RPGM.Notes.ViewModels
         public bool IsNew
         {
             get { return note != null && note.Id == Guid.Empty; }
+        }
+
+        public Note Note
+        {
+            get { return note; }
         }
 
         public ICommand SaveCommand
@@ -108,6 +134,11 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
+        public ICommand ViewCommand
+        {
+            get { return view; }
+        }
+
         public async Task Delete()
         {
             await database.DeleteAsync(note.Id);
@@ -115,7 +146,11 @@ namespace RPGM.Notes.ViewModels
             // Stop TryGoBack from preventing navigation
             IsEditMode = false;
 
-            navigation.GoBack();
+            // Navigate away if we're on the note's page
+            if (isPage)
+            {
+                navigation.GoBack();
+            }
         }
 
         public void Discard()
@@ -140,11 +175,8 @@ namespace RPGM.Notes.ViewModels
         {
             base.OnNavigatedFrom(viewModelState, suspending);
 
-            if (token != null)
-            {
-                this.eventAggregator.GetEvent<SetTextEvent>().Unsubscribe(token);
-                this.token = null;
-            }
+            eventAggregator.GetEvent<SetTextEvent>().Unsubscribe(OnSetText);
+            eventAggregator.GetEvent<SaveEvent>().Unsubscribe(OnSave);
         }
 
         public async override void OnNavigatedTo(object navigationParameter, NavigationMode navigationMode, Dictionary<string, object> viewModelState)
@@ -165,14 +197,6 @@ namespace RPGM.Notes.ViewModels
             if (Id != Guid.Empty)
             {
                 note = await database.GetAsync(Id);
-
-                if (note == null && navigationMode == NavigationMode.Back)
-                {
-                    // NOTE: This does not work! Cannot navigate again until current navigation finishes
-                    //       Likely we need to notify app to clean entries from back stack
-                    navigation.GoBack();
-                    return;
-                }
             }
             else
             {
@@ -180,8 +204,46 @@ namespace RPGM.Notes.ViewModels
                 IsEditMode = true;
             }
 
-            this.token = eventAggregator.GetEvent<SetTextEvent>().Subscribe(SetTextAsync, ThreadOption.UIThread);
+            // Must be on the dedicated note page
+            isPage = true;
+
+            eventAggregator.GetEvent<SetTextEvent>().Subscribe(OnSetText, ThreadOption.UIThread);
+            eventAggregator.GetEvent<SaveEvent>().Subscribe(OnSave, ThreadOption.UIThread);
+
             OnPropertyChanged(() => Title);
+        }
+
+        private async void OnSave(bool ignored)
+        {
+            await Save();
+        }
+
+        private async void OnSetText(bool setText)
+        {
+            if (document == null || note == null || string.IsNullOrEmpty(note.RtfContent))
+            {
+                return;
+            }
+
+            if (setText)
+            {
+                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
+            }
+
+            if (!isEditMode)
+            {
+                // TODO: Use an alias table
+                // TODO: Add disambiguation page instead of picking first note
+                // NOTE: Don't link to other notes with the same name
+                var notes = (await database.ListAsync())
+                    .GroupBy(x => x.Title)
+                    .Where(x => !x.Any(y => y.Title.Equals(note.Title, StringComparison.CurrentCultureIgnoreCase)))
+                    .Select(x => x.First())
+                    .ToArray();
+                var links = notes.ToDictionary(x => x.Title, x => new Uri(string.Format("richtea.rpgm://notes/{0}", x.Id)));
+                var color = (Color)Application.Current.Resources["SystemColorHighlightColor"];
+                document.SetLinks(links, color);
+            }
         }
 
         private void OnTextChanged(bool setText = true)
@@ -211,9 +273,6 @@ namespace RPGM.Notes.ViewModels
 
             IsEditMode = false;
             Id = note.Id;
-
-            delete.RaiseCanExecuteChanged();
-            OnPropertyChanged(() => IsNew);
         }
 
         public void SetDocument(ITextDocument document)
@@ -227,44 +286,28 @@ namespace RPGM.Notes.ViewModels
             OnTextChanged();
         }
 
-        private async void SetTextAsync(bool setText)
-        {
-            if (document == null || note == null || string.IsNullOrEmpty(note.RtfContent))
-            {
-                return;
-            }
-
-            if (setText)
-            {
-                document.SetText(TextSetOptions.FormatRtf, note.RtfContent);
-            }
-
-            if (!isEditMode)
-            {
-                // TODO: Use an alias table
-                var notes = await database.ListAsync();
-                var links = notes.Except(new[] { note }).ToDictionary(x => x.Title, x => string.Format("richtea.rpgm://notes/{0}", x.Id));
-                var color = (Color)Application.Current.Resources["SystemColorHighlightColor"];
-                document.AutoHyperlinks(links, color);
-            }
-        }
-
         public bool TryGoBack()
         {
             // TODO: Trigger a confirmation instead of simply discarding unsaved new notes
             if (IsEditMode && !IsNew && !string.IsNullOrWhiteSpace(Title))
             {
-                // NOTE: If we try to synchronously wait for the save to finish we
-                //       block the UI thread return. This means nothing validates it
-                //       completes at all
-                Save();
+                eventAggregator.GetEvent<SaveEvent>().Publish(false);
                 return false;
             }
 
             return true;
         }
 
+        public void View()
+        {
+            navigation.Navigate("Note", Id);
+        }
+
         private class SetTextEvent : PubSubEvent<bool>
+        {
+        }
+
+        private class SaveEvent : PubSubEvent<bool>
         {
         }
     }

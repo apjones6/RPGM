@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Composition.Hosting;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -8,6 +10,7 @@ using Microsoft.Practices.Prism.Mvvm.Interfaces;
 using Microsoft.Practices.Prism.PubSubEvents;
 using RPGM.Notes.Models;
 using RPGM.Notes.ViewModels;
+using RPGM.Notes.Views;
 using Windows.ApplicationModel.Activation;
 using Windows.Phone.UI.Input;
 using Windows.UI.Xaml;
@@ -24,6 +27,24 @@ namespace RPGM.Notes
         public App()
         {
             InitializeComponent();
+        }
+
+        private void OnDeleteAsync(IEnumerable<Guid> ids)
+        {
+            var frame = (Frame)Window.Current.Content;
+            var session = SessionStateService.GetSessionStateForFrame(new FrameFacadeAdapter(frame));
+            Guid id;
+
+            // Remove pages for deleted notes from the back stack, so that they are skipped
+            for (var index = frame.BackStackDepth - 1; index >= 0; index--)
+            {
+                var entry = frame.BackStack[index];
+                if (entry.SourcePageType == typeof(NotePage) && entry.Parameter != null && Guid.TryParse(entry.Parameter.ToString(), out id) && ids.Contains(id))
+                {
+                    RemoveSessionState(session, index);
+                    frame.BackStack.Remove(entry);
+                }
+            }
         }
 
         protected override void OnHardwareButtonsBackPressed(object sender, BackPressedEventArgs e)
@@ -48,13 +69,19 @@ namespace RPGM.Notes
 
         protected override Task OnInitializeAsync(IActivatedEventArgs args)
         {
+            var eventAggregator = new EventAggregator();
+
+            // NOTE: Create event aggregator here, to ensure it has access to the UI thread synchronization context
             container = new ContainerConfiguration()
                 .WithAssembly(typeof(App).GetTypeInfo().Assembly)
-                .WithInstance<IEventAggregator>(new EventAggregator())
+                .WithInstance<IEventAggregator>(eventAggregator)
                 .WithInstance<INavigationService>(NavigationService)
+                .WithInstance<ISessionStateService>(SessionStateService)
                 .CreateContainer();
 
-            ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(ViewTypeToViewModelTypeResolver);
+            ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(x => Type.GetType(VIEW_TO_VIEWMODEL.Replace(x.AssemblyQualifiedName, ".ViewModels.$1ViewModel,")));
+
+            eventAggregator.GetEvent<DeleteEvent>().Subscribe(OnDeleteAsync, ThreadOption.UIThread);
 
             return Task.FromResult(0);
         }
@@ -62,7 +89,7 @@ namespace RPGM.Notes
         protected override Task OnLaunchApplicationAsync(LaunchActivatedEventArgs args)
         {
             // TODO: Test if we need to check previous execution state here
-            NavigationService.Navigate("Main", null);
+            NavigationService.Navigate("NoteList", null);
             return Task.FromResult(0);
         }
 
@@ -71,15 +98,26 @@ namespace RPGM.Notes
             SessionStateService.RegisterKnownType(typeof(Note));
         }
 
+        private void RemoveSessionState(Dictionary<string, object> state, int index)
+        {
+            var i = index + 1;
+            while (state.ContainsKey("ViewModel-" + i))
+            {
+                state["ViewModel-" + (i - 1)] = state["ViewModel-" + i];
+                i++;
+            }
+
+            i = index + 1;
+            while (state.ContainsKey("Page-" + i))
+            {
+                state["Page-" + (i - 1)] = state["Page-" + i];
+                i++;
+            }
+        }
+
         protected override object Resolve(Type type)
         {
             return container.GetExport(type);
-        }
-
-        private static Type ViewTypeToViewModelTypeResolver(Type view)
-        {
-            var viewmodel = VIEW_TO_VIEWMODEL.Replace(view.AssemblyQualifiedName, ".ViewModels.$1ViewModel,");
-            return Type.GetType(viewmodel);
         }
     }
 }

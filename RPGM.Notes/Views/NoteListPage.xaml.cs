@@ -5,9 +5,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.Views
 {
-    public sealed partial class MainPage : VisualStateAwarePage
+    public sealed partial class NoteListPage : VisualStateAwarePage
     {
-        public MainPage()
+        public NoteListPage()
         {
             this.InitializeComponent();
             this.NavigationCacheMode = NavigationCacheMode.Required;
