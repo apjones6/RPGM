@@ -15,6 +15,8 @@
 
     <Page.Resources>
         <c:BooleanToSelectionModeConverter x:Key="BoolToSelectionMode" />
+        <c:IntToInvisibilityConverter x:Key="IntToInvisibility" />
+        <c:IntToVisibilityConverter x:Key="IntToVisibility" />
         <c:ObjectPropertyConverter x:Key="ObjectPropertyConverter" />
         <c:TimeAgoConverter x:Key="TimeAgoConverter" />
         <DataTemplate x:Key="ItemTemplate">
@@ -99,7 +101,8 @@
             ItemContainerStyle="{StaticResource ItemContainerStyle}"
             ItemsSource="{Binding Notes}"
             ItemTemplate="{StaticResource ItemTemplate}"
-            SelectionMode="{Binding IsSelectMode, Converter={StaticResource BoolToSelectionMode}}">
+            SelectionMode="{Binding IsSelectMode, Converter={StaticResource BoolToSelectionMode}}"
+            Visibility="{Binding Path=Notes.Count, Converter={StaticResource IntToVisibility}}">
             <i:Interaction.Behaviors>
                 <!-- TODO: Tidy this if we can -->
                 <core:EventTriggerBehavior EventName="SelectionChanged">
@@ -114,6 +117,13 @@
                 <Canvas Height="65" />
             </ListView.Footer>
         </ListView>
+        <TextBlock
+            x:Uid="EmptyListView"
+            Grid.Row="2"
+            Style="{StaticResource ListViewEmptyStaticTextBlockStyle}"
+            Text="No notes"
+            Visibility="{Binding Path=Notes.Count, Converter={StaticResource IntToInvisibility}}"
+            />
     </Grid>
     
     <Page.BottomAppBar>

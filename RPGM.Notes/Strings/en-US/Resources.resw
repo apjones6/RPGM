@@ -144,6 +144,9 @@
   <data name="DeleteButton.Text" xml:space="preserve">
     <value>delete</value>
   </data>
+  <data name="EmptyListView.Text" xml:space="preserve">
+    <value>No notes</value>
+  </data>
   <data name="FormatTitle.Text" xml:space="preserve">
     <value>format</value>
   </data>

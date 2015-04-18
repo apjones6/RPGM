@@ -89,6 +89,8 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\RichEditBoxLinker.cs" />
+    <Compile Include="Converters\IntToVisibilityConverter.cs" />
+    <Compile Include="Converters\IntToInvisibilityConverter.cs" />
     <Compile Include="Converters\BooleanNegateConverter.cs" />
     <Compile Include="Converters\BooleanToInvisibilityConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
