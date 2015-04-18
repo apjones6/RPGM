@@ -46,7 +46,7 @@
                     />
                 <TextBlock
                     Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}"
-                    Text="{Binding Path=Note.DateModified, Converter={StaticResource TimeAgoConverter}}"
+                    Text="{Binding DateModified, Converter={StaticResource TimeAgoConverter}}"
                     />
             </StackPanel>
         </DataTemplate>

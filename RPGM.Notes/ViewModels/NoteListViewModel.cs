@@ -86,7 +86,7 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        public async Task DeleteSelected()
+        private async Task DeleteSelected()
         {
             var ids = selectedItems.Select(x => x.Id).ToArray();
             
@@ -96,7 +96,7 @@ namespace RPGM.Notes.ViewModels
             await database.DeleteAsync(ids);
         }
 
-        public void New()
+        private void New()
         {
             navigation.Navigate("Note", null);
         }
@@ -124,6 +124,8 @@ namespace RPGM.Notes.ViewModels
         {
             base.OnNavigatedTo(navigationParameter, navigationMode, viewModelState);
 
+            eventAggregator.GetEvent<DeleteEvent>().Subscribe(OnDelete, ThreadOption.UIThread);
+
             var i = 0;
             foreach (var note in await database.ListAsync())
             {
@@ -136,8 +138,7 @@ namespace RPGM.Notes.ViewModels
                 }
                 else
                 {
-                    item.Note.DateModified = note.DateModified;
-                    item.Note.Title = note.Title;
+                    item.SetNote(note);
 
                     // Move if necessary
                     var index = notes.IndexOf(item);
@@ -150,8 +151,6 @@ namespace RPGM.Notes.ViewModels
                 i++;
             }
 
-            eventAggregator.GetEvent<DeleteEvent>().Subscribe(OnDelete, ThreadOption.UIThread);
-
             // Remove any other items in the collection
             while (notes.Count > i)
             {
@@ -159,7 +158,7 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        public void Select()
+        private void Select()
         {
             IsSelectMode = true;
         }

@@ -65,6 +65,11 @@ namespace RPGM.Notes.ViewModels
             this.note = note;
         }
 
+        public DateTimeOffset DateModified
+        {
+            get { return note != null ? note.DateModified : default(DateTimeOffset); }
+        }
+
         public ICommand DeleteCommand
         {
             get { return delete; }
@@ -108,11 +113,6 @@ namespace RPGM.Notes.ViewModels
             get { return note != null && note.Id == Guid.Empty; }
         }
 
-        public Note Note
-        {
-            get { return note; }
-        }
-
         public ICommand SaveCommand
         {
             get { return save; }
@@ -139,7 +139,7 @@ namespace RPGM.Notes.ViewModels
             get { return view; }
         }
 
-        public async Task Delete()
+        private async Task Delete()
         {
             await database.DeleteAsync(note.Id);
 
@@ -153,7 +153,7 @@ namespace RPGM.Notes.ViewModels
             }
         }
 
-        public void Discard()
+        private void Discard()
         {
             IsEditMode = false;
             Title = null;
@@ -161,7 +161,7 @@ namespace RPGM.Notes.ViewModels
             OnTextChanged();
         }
 
-        public void Edit()
+        private void Edit()
         {
             if (!string.IsNullOrEmpty(note.RtfContent))
             {
@@ -251,7 +251,7 @@ namespace RPGM.Notes.ViewModels
             eventAggregator.GetEvent<SetTextEvent>().Publish(setText);
         }
 
-        public async Task Save()
+        private async Task Save()
         {
             // Use property as if not changed the field may be null
             note.Title = Title;
@@ -286,6 +286,27 @@ namespace RPGM.Notes.ViewModels
             OnTextChanged();
         }
 
+        public void SetNote(Note note)
+        {
+            if (note == null) throw new ArgumentNullException("note");
+
+            this.note = note;
+            this.Id = note.Id;
+
+            // NOTE: If title is null then we need to trigger the change event explicitly for the UI
+            //       to update the value
+            if (this.title == null)
+            {
+                OnPropertyChanged(() => Title);
+            }
+            else
+            {
+                this.Title = null;
+            }
+
+            OnTextChanged();
+        }
+
         public bool TryGoBack()
         {
             // TODO: Trigger a confirmation instead of simply discarding unsaved new notes
@@ -298,7 +319,7 @@ namespace RPGM.Notes.ViewModels
             return true;
         }
 
-        public void View()
+        private void View()
         {
             navigation.Navigate("Note", Id);
         }
