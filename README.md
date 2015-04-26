@@ -23,8 +23,7 @@ Currently this project uses NuGet packages which are not included in the GIT rep
 
 This project now uses SQLite to store created data. To do this, you must install the appropriate Visual Studio extension SDK for their development environment. Please follow the [guidance information](https://sqlitepcl.codeplex.com/documentation) for windows phone 8.1 to do this (and don't forget to set your solution to build in x86).
 
- - SQLite.Net-PCL: 2.5.1
- - SQLite SDK: 3.8.8.3
+ - SQLite for Windows Phone 8.1: 3.8.9
 
 ## Git Flow ##
 

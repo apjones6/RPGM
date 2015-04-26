@@ -29,7 +29,6 @@ namespace RPGM.Notes.ViewModels
         private readonly IEventAggregator eventAggregator;
         private readonly INavigationService navigation;
         private readonly DelegateCommandBase save;
-        private readonly ICommand view;
 
         private ITextDocument document;
         private Guid id;
@@ -53,7 +52,6 @@ namespace RPGM.Notes.ViewModels
             this.eventAggregator = eventAggregator;
             this.navigation = navigation;
             this.save = DelegateCommand.FromAsyncHandler(Save, () => !string.IsNullOrWhiteSpace(Title));
-            this.view = new DelegateCommand(View);
         }
 
         public NoteViewModel(Note note, IDatabase database, IEventAggregator eventAggregator, INavigationService navigation)
@@ -132,11 +130,6 @@ namespace RPGM.Notes.ViewModels
                 SetProperty(ref title, value);
                 save.RaiseCanExecuteChanged();
             }
-        }
-
-        public ICommand ViewCommand
-        {
-            get { return view; }
         }
 
         private async Task Delete()
@@ -317,11 +310,6 @@ namespace RPGM.Notes.ViewModels
             }
 
             return true;
-        }
-
-        private void View()
-        {
-            navigation.Navigate("Note", Id);
         }
 
         private class SetTextEvent : PubSubEvent<bool>

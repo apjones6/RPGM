@@ -27,7 +27,7 @@
                         <a:OpenFlyoutAction />
                     </core:EventTriggerBehavior>
                     <core:EventTriggerBehavior EventName="Tapped">
-                        <core:InvokeCommandAction Command="{Binding ViewCommand}" />
+                        <core:NavigateToPageAction TargetPage="RPGM.Notes.Views.NotePage" Parameter="{Binding Id}" />
                     </core:EventTriggerBehavior>
                 </i:Interaction.Behaviors>
 
