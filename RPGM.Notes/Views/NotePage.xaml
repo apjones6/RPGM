@@ -271,6 +271,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
@@ -281,21 +282,27 @@
                     FontSize="42"
                     FontWeight="ExtraBlack"
                     IsEnabled="{Binding IsEditMode}"
-                    Margin="19,0,0,10"
+                    Margin="19,0,0,0"
                     PlaceholderText="title"
                     Style="{StaticResource HeaderTextBoxStyle}"
                     Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     />
-                <!-- TODO: Merge these 3 controls into a single user control -->
                 <Canvas
                     Grid.Row="1"
+                    Background="{ThemeResource TextBoxPlaceholderTextThemeBrush}"
+                    Height="2.5"
+                    Margin="19,0,50,0"
+                    />
+                <!-- TODO: Merge these 3 controls into a single user control -->
+                <Canvas
+                    Grid.Row="2"
                     Background="Transparent"
                     Tapped="OnCanvasTapped"
                     />
                 <RichEditBox
                     x:Name="RtfContentBox"
                     x:Uid="TextBoxRtfContent"
-                    Grid.Row="1"
+                    Grid.Row="2"
                     FontFamily="Segoe UI"
                     IsEnabled="{Binding IsEditMode}"
                     Margin="19,0"
@@ -312,7 +319,7 @@
                     </i:Interaction.Behaviors>
                 </RichEditBox>
                 <ctrl:RichEditBoxLinker
-                    Grid.Row="1"
+                    Grid.Row="2"
                     IsEnabled="{Binding IsEditMode, Converter={StaticResource BoolNegate}}"
                     RichEditBox="{Binding ElementName=RtfContentBox}">
                     <i:Interaction.Behaviors>
