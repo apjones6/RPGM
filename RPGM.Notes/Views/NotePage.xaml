@@ -301,8 +301,16 @@
                     Margin="19,0"
                     ScrollViewer.VerticalScrollMode="Disabled"
                     Style="{StaticResource RichEditBoxStyle}"
-                    TextWrapping="Wrap"
-                    />
+                    TextWrapping="Wrap">
+                    <i:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="GotFocus">
+                            <core:ChangePropertyAction PropertyName="IsFormatEnabled" TargetObject="{Binding}" Value="True" />
+                        </core:EventTriggerBehavior>
+                        <core:EventTriggerBehavior EventName="LostFocus">
+                            <core:ChangePropertyAction PropertyName="IsFormatEnabled" TargetObject="{Binding}" Value="False" />
+                        </core:EventTriggerBehavior>
+                    </i:Interaction.Behaviors>
+                </RichEditBox>
                 <ctrl:RichEditBoxLinker
                     Grid.Row="1"
                     IsEnabled="{Binding IsEditMode, Converter={StaticResource BoolNegate}}"
@@ -337,6 +345,7 @@
                 <AppBarButton
                     x:Uid="AppBarFormat"
                     Icon="Font"
+                    IsEnabled="{Binding IsFormatEnabled}"
                     Label="format"
                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}">
                     <AppBarButton.Flyout>

@@ -33,6 +33,7 @@ namespace RPGM.Notes.ViewModels
         private ITextDocument document;
         private Guid id;
         private bool isEditMode;
+        private bool isFormatEnabled;
         private bool isPage;
         private Note note;
         private TextFormatViewModel textFormat;
@@ -104,6 +105,12 @@ namespace RPGM.Notes.ViewModels
                 discard.RaiseCanExecuteChanged();
                 save.RaiseCanExecuteChanged();
             }
+        }
+
+        public bool IsFormatEnabled
+        {
+            get { return isFormatEnabled; }
+            set { SetProperty(ref isFormatEnabled, value); }
         }
 
         public bool IsNew
