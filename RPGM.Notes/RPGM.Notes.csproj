@@ -97,6 +97,7 @@
     <Compile Include="Converters\BooleanToSelectionModeConverter.cs" />
     <Compile Include="Converters\ObjectPropertyConverter.cs" />
     <Compile Include="Converters\TimeAgoConverter.cs" />
+    <Compile Include="DesignData.cs" />
     <Compile Include="Extensions\ContainerConfigurationExtensions.cs" />
     <Compile Include="Extensions\ITextDocumentExtensions.cs" />
     <Compile Include="Models\Database.cs" />

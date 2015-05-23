@@ -6,11 +6,16 @@
     xmlns:c="using:RPGM.Notes.Converters"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:ctrl="using:RPGM.Notes.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dd="using:RPGM.Notes.DesignData"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="using:Microsoft.Practices.Prism.Mvvm"
     xmlns:s="using:Microsoft.Practices.Prism.StoreApps"
     xmlns:v="using:RPGM.Notes.Views"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    d:DataContext="{d:DesignInstance Type=dd:Note, IsDesignTimeCreatable=True}"
+    mc:Ignorable="d"
     p:ViewModelLocator.AutoWireViewModel="True"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     RequestedTheme="Light">
@@ -291,7 +296,7 @@
                     Grid.Row="1"
                     Background="{ThemeResource TextBoxPlaceholderTextThemeBrush}"
                     Height="2.5"
-                    Margin="19,0,50,0"
+                    Margin="19,0"
                     />
                 <!-- TODO: Merge these 3 controls into a single user control -->
                 <Canvas
