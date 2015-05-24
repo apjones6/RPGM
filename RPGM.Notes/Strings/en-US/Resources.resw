@@ -159,7 +159,10 @@
   <data name="RenameTitle.Text" xml:space="preserve">
     <value>rename</value>
   </data>
+  <data name="RtfContentBox.PlaceholderText" xml:space="preserve">
+    <value>Enter your note here...</value>
+  </data>
   <data name="TextBoxTitle.PlaceholderText" xml:space="preserve">
-    <value>title</value>
+    <value>Title</value>
   </data>
 </root>
