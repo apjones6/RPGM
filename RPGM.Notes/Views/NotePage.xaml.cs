@@ -53,6 +53,12 @@ namespace RPGM.Notes.Views
             {
                 ((IDocumentAware)DataContext).SetDocument(RtfContentBox.Document);
             }
+
+            // Focus the title textbox if it's editable
+            if (TitleBox.IsEnabled)
+            {
+                TitleBox.Focus(FocusState.Programmatic);
+            }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

@@ -290,6 +290,7 @@
                 </Grid.RowDefinitions>
 
                 <TextBox
+                    x:Name="TitleBox"
                     x:Uid="TextBoxTitle"
                     ContinuumNavigationTransitionInfo.IsEntranceElement="{Binding IsNew, Converter={StaticResource BoolNegate}}"
                     Grid.Row="0"
