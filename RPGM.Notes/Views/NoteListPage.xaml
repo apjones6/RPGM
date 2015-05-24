@@ -48,10 +48,12 @@
 
                 <TextBlock
                     ContinuumNavigationTransitionInfo.IsExitElement="True"
+                    OpticalMarginAlignment="TrimSideBearings"
                     Style="{ThemeResource ListViewItemTextBlockStyle}"
                     Text="{Binding Title}"
                     />
                 <TextBlock
+                    OpticalMarginAlignment="TrimSideBearings"
                     Style="{ThemeResource ListViewItemSubheaderTextBlockStyle}"
                     Text="{Binding DateModified, Converter={StaticResource TimeAgoConverter}}"
                     />
