@@ -77,20 +77,23 @@
             </Setter>
         </Style>
         <Style x:Key="HeaderTextBoxStyle" TargetType="TextBox">
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="{ThemeResource PhoneForegroundBrush}"/>
-            <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
             <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}"/>
             <Setter Property="FontSize" Value="57.5"/>
             <Setter Property="FontWeight" Value="SemiLight"/>
-            <Setter Property="TextWrapping" Value="NoWrap"/>
+            <Setter Property="Foreground" Value="{ThemeResource PhoneForegroundBrush}"/>
+            <Setter Property="Margin" Value="{ThemeResource TextControlMarginThemeThickness}"/>
+            <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
+            <Setter Property="Padding" Value="0,0.5,8,0"/>
             <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto"/>
             <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto"/>
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden"/>
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
             <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False"/>
-            <Setter Property="Padding" Value="0,0.5,8,0"/>
-            <Setter Property="Margin" Value="{ThemeResource TextControlMarginThemeThickness}"/>
+            <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}"/>
+            <Setter Property="TextWrapping" Value="NoWrap"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -100,34 +103,41 @@
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Disabled">
                                         <Storyboard>
-                                            <DoubleAnimation Duration="0" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="ReadOnlyContentElement"/>
-                                            <DoubleAnimation Duration="0" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="ContentElement"/>
+                                            <DoubleAnimation Duration="0" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="ReadOnlyContentElement" />
+                                            <DoubleAnimation Duration="0" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="ContentElement" />
                                         </Storyboard>
                                     </VisualState>
-                                    <VisualState x:Name="Focused">
-                                        <Storyboard>
-                                            <DoubleAnimation Duration="0" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="PlaceholderTextContentPresenter"/>
-                                        </Storyboard>
-                                    </VisualState>
+                                    <VisualState x:Name="Focused" />
+                                    <VisualState x:Name="Normal" />
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
+                            <Border
+                                x:Name="BackgroundElement"
+                                Background="{TemplateBinding Background}"
+                                Margin="{TemplateBinding BorderThickness}"
+                                />
+                            <Border
+                                x:Name="BorderElement"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                />
                             <TextBlock
                                 x:Name="ReadOnlyContentElement"
+                                Margin="{TemplateBinding BorderThickness}"
                                 Opacity="0"
                                 OpticalMarginAlignment="TrimSideBearings"
-                                Margin="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
                                 Text="{TemplateBinding Text}"
                                 />
                             <ScrollViewer
                                 x:Name="ContentElement"
                                 AutomationProperties.AccessibilityView="Raw"
-                                HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                                 HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                                IsTabStop="False"
-                                IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                                IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                                 IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                IsTabStop="False"
+                                IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
                                 Margin="{TemplateBinding BorderThickness}"
                                 MinHeight="{ThemeResource TextControlThemeMinHeight}"
                                 Padding="{TemplateBinding Padding}"
@@ -135,10 +145,12 @@
                                 VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
                                 ZoomMode="Disabled"
                                 />
+                            <!-- When the placeholder becomes visible the TextBox height increases slightly -->
                             <ContentControl
                                 x:Name="PlaceholderTextContentPresenter"
                                 Content="{TemplateBinding PlaceholderText}"
                                 Foreground="{ThemeResource TextBoxPlaceholderTextThemeBrush}"
+                                IsHitTestVisible="False"
                                 IsTabStop="False"
                                 Margin="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
