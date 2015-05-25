@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Microsoft.Xaml.Interactivity;
-using RPGM.Notes.Controls;
 using RPGM.Notes.Views;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -13,7 +12,7 @@ namespace RPGM.Notes.Actions
     {
         public object Execute(object sender, object parameter)
         {
-            var args = parameter as NavigationEventArgs;
+            var args = parameter as UriNavigationEventArgs;
             if (args == null)
             {
                 return false;

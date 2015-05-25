@@ -3,10 +3,8 @@ using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.StoreApps;
 using RPGM.Notes.ViewModels;
 using Windows.UI;
-using Windows.UI.Text;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 
 namespace RPGM.Notes.Views
@@ -27,15 +25,6 @@ namespace RPGM.Notes.Views
         public ICommand GoHomeCommand
         {
             get { return goHome; }
-        }
-
-        private void OnCanvasTapped(object sender, TappedRoutedEventArgs e)
-        {
-            // TODO: MVVM if acceptable - Use Behaviours/Actions
-            // TODO: Resolve intermittent occluded rect above keyboard (custom keyboard handler, or animate occluded rect perhaps)
-            RtfContentBox.Document.Selection.SetPoint(e.GetPosition(null), PointOptions.None, false);
-            RtfContentBox.Document.Selection.ScrollIntoView(PointOptions.None);
-            RtfContentBox.Focus(FocusState.Pointer);
         }
 
         private void OnFlyoutClosed(object sender, object e)

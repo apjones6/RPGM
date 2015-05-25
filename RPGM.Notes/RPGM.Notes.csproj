@@ -88,7 +88,6 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\RichEditBoxLinker.cs" />
     <Compile Include="Converters\IntToVisibilityConverter.cs" />
     <Compile Include="Converters\IntToInvisibilityConverter.cs" />
     <Compile Include="Converters\BooleanNegateConverter.cs" />
@@ -108,6 +107,9 @@
     <Compile Include="ViewModels\NoteListViewModel.cs" />
     <Compile Include="ViewModels\NoteViewModel.cs" />
     <Compile Include="ViewModels\TextFormatViewModel.cs" />
+    <Compile Include="Views\LinkRichEditBox.xaml.cs">
+      <DependentUpon>LinkRichEditBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\NoteListPage.xaml.cs">
       <DependentUpon>NoteListPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -143,6 +145,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
+    <Page Include="Views\LinkRichEditBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\NoteListPage.xaml">
       <SubType>Designer</SubType>
