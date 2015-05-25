@@ -217,6 +217,7 @@
                     />
                 <v:LinkRichEditBox
                     x:Name="RtfContentBox"
+                    x:Uid="RtfContentBox"
                     Grid.Row="2"
                     IsFocused="{Binding IsFormatEnabled, Mode=TwoWay}"
                     IsReadOnly="{Binding IsEditMode, Converter={StaticResource BoolNegate}}"
